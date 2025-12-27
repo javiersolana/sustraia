@@ -13,7 +13,10 @@ const Navbar = () => (
         SUSTRAIA
       </div>
       <div className="hidden md:flex gap-8">
-        {['Cómo funciona', 'Oposiciones', 'Metodología', 'Coaches', 'Planes'].map((link) => (
+        <a href="#como-funciona" className="text-sm font-medium text-sustraia-gray hover:text-sustraia-accent transition-colors">
+          Cómo funciona
+        </a>
+        {['Oposiciones', 'Metodología', 'Coaches', 'Planes'].map((link) => (
           <a key={link} href="#" className="text-sm font-medium text-sustraia-gray hover:text-sustraia-accent transition-colors">
             {link}
           </a>
@@ -198,7 +201,7 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section className="py-32 bg-white">
+    <section id="como-funciona" className="py-32 bg-white">
       <div className="container mx-auto px-6">
         {/* Hero Claim */}
         <div className="max-w-5xl mx-auto text-center mb-20">
