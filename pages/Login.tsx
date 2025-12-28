@@ -26,6 +26,8 @@ const Login: React.FC = () => {
         navigate('/dashboard/atleta');
       } else if (response.user.role === 'COACH') {
         navigate('/dashboard/coach');
+      } else if (response.user.role === 'ADMIN') {
+        navigate('/admin');
       }
     } catch (err) {
       if (err instanceof ApiError) {
