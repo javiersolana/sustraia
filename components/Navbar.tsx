@@ -18,9 +18,11 @@ export const Navbar = () => (
           </a>
         ))}
       </div>
-      <Button variant="secondary" size="sm" className="hidden sm:flex bg-black text-white hover:bg-sustraia-accent border-0">
-        Area Atletas
-      </Button>
+      <Link to="/login">
+        <Button variant="secondary" size="sm" className="hidden sm:flex bg-black text-white hover:bg-sustraia-accent border-0">
+          Área Atletas
+        </Button>
+      </Link>
     </div>
   </nav>
 );

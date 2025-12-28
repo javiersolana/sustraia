@@ -6,6 +6,8 @@ import ComoFunciona from './pages/ComoFunciona';
 import Login from './pages/Login';
 import AthleteDashboard from './pages/dashboards/AthleteDashboard';
 import CoachDashboard from './pages/dashboards/CoachDashboard';
+import Admin from './pages/Admin';
+import StravaCallback from './pages/auth/StravaCallback';
 
 export default function App() {
   return (
@@ -18,9 +20,15 @@ export default function App() {
         {/* Login page without Layout */}
         <Route path="/login" element={<Login />} />
 
+        {/* OAuth callbacks */}
+        <Route path="/auth/strava/callback" element={<StravaCallback />} />
+
         {/* Dashboard pages without Layout (have their own Sidebar) */}
         <Route path="/dashboard/atleta" element={<AthleteDashboard />} />
         <Route path="/dashboard/coach" element={<CoachDashboard />} />
+
+        {/* Admin panel */}
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>
   );

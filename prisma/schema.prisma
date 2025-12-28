@@ -1,0 +1,174 @@
+// Prisma Schema for SUSTRAIA
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ATLETA
+  COACH
+}
+
+enum WorkoutType {
+  RUN
+  RIDE
+  SWIM
+  STRENGTH
+  YOGA
+  OTHER
+}
+
+enum WorkoutLabel {
+  CALENTAMIENTO
+  DESCALENTAMIENTO
+  FUERZA
+  SERIES
+  TEMPO
+  RODAJE
+  CUESTAS
+  OTRO
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  workouts          Workout[]
+  completedWorkouts CompletedWorkout[]
+  sentMessages      Message[]          @relation("SentMessages")
+  receivedMessages  Message[]          @relation("ReceivedMessages")
+  stats             Stat[]
+  stravaToken       StravaToken?
+
+  // Athlete-specific relations
+  assignedWorkouts Workout[] @relation("AssignedWorkouts")
+  coach            User?     @relation("CoachAthletes", fields: [coachId], references: [id])
+  coachId          String?
+
+  // Coach-specific relations
+  athletes User[] @relation("CoachAthletes")
+
+  @@index([email])
+  @@index([role])
+}
+
+model Workout {
+  id          String      @id @default(cuid())
+  userId      String // Coach who created it
+  assignedTo  String? // Athlete it's assigned to
+  date        DateTime
+  type        WorkoutType
+  title       String
+  description String?
+  distance    Float? // in meters
+  duration    Int? // in seconds
+  intensity   String? // easy, moderate, hard, race
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  creator          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  athlete          User?              @relation("AssignedWorkouts", fields: [assignedTo], references: [id], onDelete: SetNull)
+  completedVersion CompletedWorkout?
+
+  @@index([userId])
+  @@index([assignedTo])
+  @@index([date])
+}
+
+model CompletedWorkout {
+  id             String        @id @default(cuid())
+  workoutId      String?       @unique // Optional - null for Strava-only activities
+  userId         String
+  title          String?       // From Strava activity name
+  label          WorkoutLabel  @default(OTRO)
+  completedAt    DateTime      @default(now())
+  actualDuration Int?          // in seconds
+  actualDistance Float?        // in meters
+  avgHeartRate   Int?
+  maxHeartRate   Int?
+  calories       Int?
+  feeling        String?       // 1-5 or descriptive
+  notes          String?
+  stravaId       String?       @unique // Strava activity ID
+  stravaType     String?       // Original Strava activity type
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  workout Workout? @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([completedAt])
+  @@index([stravaId])
+  @@index([label])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  content   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  from User @relation("SentMessages", fields: [fromId], references: [id], onDelete: Cascade)
+  to   User @relation("ReceivedMessages", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@index([fromId])
+  @@index([toId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model Stat {
+  id         String   @id @default(cuid())
+  userId     String
+  metricName String // totalDistance, totalWorkouts, weeklyDistance, etc.
+  value      Float
+  date       DateTime // For time-series data
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, metricName, date])
+  @@index([userId])
+  @@index([metricName])
+  @@index([date])
+}
+
+model StravaToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  scope        String
+  athleteId    String // Strava athlete ID
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}

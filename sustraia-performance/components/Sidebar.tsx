@@ -1,50 +1,39 @@
 import React from 'react';
-import {
-  House,
-  Calendar,
-  TrendingUp,
-  MessageSquare,
-  User,
-  Activity,
-  LayoutDashboard,
-  Users,
+import { 
+  House, 
+  Calendar, 
+  TrendingUp, 
+  MessageSquare, 
+  User, 
+  Activity, 
+  LayoutDashboard, 
+  Users, 
   BarChart3,
   Settings
 } from 'lucide-react';
-import { Role } from '../../lib/types/dashboard';
+import { Role } from '../types';
 import { motion } from 'framer-motion';
-import { api } from '../../lib/api/client';
 
 interface SidebarProps {
   role: Role;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ role }) => {
-  const menuItems = role === Role.ATHLETE
+  const menuItems = role === Role.ATHLETE 
     ? [
-      { icon: House, label: 'Inicio', active: true },
-      { icon: Calendar, label: 'Entrenamientos', active: false },
-      { icon: TrendingUp, label: 'Progreso', active: false },
-      { icon: MessageSquare, label: 'Mensajes', active: false },
-      { icon: User, label: 'Perfil', active: false },
-    ]
+        { icon: House, label: 'Inicio', active: true },
+        { icon: Calendar, label: 'Entrenamientos', active: false },
+        { icon: TrendingUp, label: 'Progreso', active: false },
+        { icon: MessageSquare, label: 'Mensajes', active: false },
+        { icon: User, label: 'Perfil', active: false },
+      ]
     : [
-      { icon: LayoutDashboard, label: 'Vista general', active: true },
-      { icon: Users, label: 'Mis atletas', active: false },
-      { icon: Calendar, label: 'Calendario', active: false },
-      { icon: MessageSquare, label: 'Mensajes', active: false },
-      { icon: BarChart3, label: 'Estadísticas', active: false },
-    ];
-
-  const handleStravaConnect = async () => {
-    try {
-      const { authUrl } = await api.strava.getAuthUrl();
-      window.location.href = authUrl;
-    } catch (error) {
-      console.error('Error getting Strava auth URL:', error);
-      alert('Error al conectar con Strava. Verifica la configuración.');
-    }
-  };
+        { icon: LayoutDashboard, label: 'Vista general', active: true },
+        { icon: Users, label: 'Mis atletas', active: false },
+        { icon: Calendar, label: 'Calendario', active: false },
+        { icon: MessageSquare, label: 'Mensajes', active: false },
+        { icon: BarChart3, label: 'Estadísticas', active: false },
+      ];
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-72 bg-sustraia-paper border-r border-sustraia-light-gray flex flex-col justify-between p-6 z-40 hidden md:flex">
@@ -66,8 +55,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
               whileHover={{ x: 4 }}
               className={`
                 flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200
-                ${item.active
-                  ? 'bg-sustraia-accent text-white shadow-lg shadow-blue-500/20'
+                ${item.active 
+                  ? 'bg-sustraia-accent text-white shadow-lg shadow-blue-500/20' 
                   : 'text-sustraia-gray hover:bg-blue-50 hover:text-sustraia-accent'
                 }
               `}
@@ -82,11 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
       {/* Footer Button */}
       <div className="px-2">
         {role === Role.ATHLETE ? (
-          <button
-            onClick={handleStravaConnect}
-            className="w-full py-3 px-4 rounded-full border-2 border-sustraia-light-gray text-sustraia-gray font-bold text-sm hover:border-orange-500 hover:text-orange-500 transition-colors flex items-center justify-center gap-2"
-          >
-            Sincronizar Strava
+          <button className="w-full py-3 px-4 rounded-full border-2 border-sustraia-light-gray text-sustraia-gray font-bold text-sm hover:border-orange-500 hover:text-orange-500 transition-colors flex items-center justify-center gap-2">
+             Sincronizar Strava
           </button>
         ) : (
           <button className="w-full py-4 px-4 rounded-full bg-sustraia-accent text-white font-bold text-sm shadow-lg shadow-blue-500/30 hover:bg-sustraia-accent-hover hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">

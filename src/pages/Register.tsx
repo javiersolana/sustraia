@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Activity, Mail, Lock, User, Users, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth, ApiError } from '../lib/api/client';
+import { useAuth, ApiError } from '../../lib/api/client';
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [role, setRole] = useState<'ATLETA' | 'COACH'>('ATLETA');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -19,7 +21,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await login(email, password);
+      const response = await register(email, password, name, role);
 
       // Redirect based on user role
       if (response.user.role === 'ATLETA') {
@@ -31,7 +33,7 @@ const Login: React.FC = () => {
       if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError('Error al iniciar sesión. Por favor, intenta de nuevo.');
+        setError('Error al crear cuenta. Por favor, intenta de nuevo.');
       }
     } finally {
       setIsLoading(false);
@@ -61,10 +63,10 @@ const Login: React.FC = () => {
           className="bg-white rounded-3xl shadow-xl border border-sustraia-light-gray p-8 lg:p-10"
         >
           <h1 className="font-display font-black text-3xl text-sustraia-text tracking-tight mb-2">
-            Bienvenido
+            Crear Cuenta
           </h1>
           <p className="text-sustraia-gray font-medium mb-8">
-            Inicia sesión para continuar
+            Únete a la comunidad de coaching
           </p>
 
           {/* Form */}
@@ -74,6 +76,24 @@ const Login: React.FC = () => {
                 <p className="text-sm font-medium text-red-600">{error}</p>
               </div>
             )}
+
+            <div>
+              <label className="block text-sm font-bold text-sustraia-text mb-2">
+                Nombre Completo
+              </label>
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-sustraia-gray" size={20} />
+                <input
+                  type="text"
+                  placeholder="Juan Pérez"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-sustraia-light-gray focus:border-sustraia-accent focus:outline-none transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+              </div>
+            </div>
 
             <div>
               <label className="block text-sm font-bold text-sustraia-text mb-2">
@@ -105,20 +125,55 @@ const Login: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   disabled={isLoading}
                   className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-sustraia-light-gray focus:border-sustraia-accent focus:outline-none transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
+              <p className="text-xs text-sustraia-gray mt-1 ml-1">Mínimo 6 caracteres</p>
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 rounded border-sustraia-light-gray text-sustraia-accent focus:ring-sustraia-accent" />
-                <span className="text-sustraia-gray font-medium">Recordarme</span>
+            <div>
+              <label className="block text-sm font-bold text-sustraia-text mb-3">
+                Tipo de Cuenta
               </label>
-              <a href="#" className="text-sustraia-accent font-bold hover:underline">
-                ¿Olvidaste tu contraseña?
-              </a>
+              <div className="grid grid-cols-2 gap-4">
+                <motion.button
+                  type="button"
+                  onClick={() => setRole('ATLETA')}
+                  disabled={isLoading}
+                  whileHover={!isLoading ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading ? { scale: 0.98 } : {}}
+                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    role === 'ATLETA'
+                      ? 'border-sustraia-accent bg-blue-50'
+                      : 'border-sustraia-light-gray hover:border-sustraia-accent/50'
+                  }`}
+                >
+                  <User size={24} className={role === 'ATLETA' ? 'text-sustraia-accent' : 'text-sustraia-gray'} />
+                  <span className={`font-bold text-sm ${role === 'ATLETA' ? 'text-sustraia-accent' : 'text-sustraia-text'}`}>
+                    Atleta
+                  </span>
+                </motion.button>
+
+                <motion.button
+                  type="button"
+                  onClick={() => setRole('COACH')}
+                  disabled={isLoading}
+                  whileHover={!isLoading ? { scale: 1.02 } : {}}
+                  whileTap={!isLoading ? { scale: 0.98 } : {}}
+                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    role === 'COACH'
+                      ? 'border-sustraia-accent bg-blue-50'
+                      : 'border-sustraia-light-gray hover:border-sustraia-accent/50'
+                  }`}
+                >
+                  <Users size={24} className={role === 'COACH' ? 'text-sustraia-accent' : 'text-sustraia-gray'} />
+                  <span className={`font-bold text-sm ${role === 'COACH' ? 'text-sustraia-accent' : 'text-sustraia-text'}`}>
+                    Coach
+                  </span>
+                </motion.button>
+              </div>
             </div>
 
             <motion.button
@@ -128,10 +183,19 @@ const Login: React.FC = () => {
               disabled={isLoading}
               className="w-full py-4 px-6 rounded-full bg-sustraia-accent text-white font-bold shadow-lg shadow-blue-500/30 hover:bg-sustraia-accent-hover transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
               {!isLoading && <ArrowRight size={20} />}
             </motion.button>
           </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-sustraia-gray">
+              ¿Ya tienes cuenta?{' '}
+              <Link to="/login" className="text-sustraia-accent font-bold hover:underline">
+                Inicia Sesión
+              </Link>
+            </p>
+          </div>
         </motion.div>
 
         <p className="text-center text-sm text-sustraia-gray mt-8">
@@ -142,4 +206,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Register;
