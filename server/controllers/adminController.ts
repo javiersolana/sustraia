@@ -150,7 +150,14 @@ export async function createAthlete(req: Request, res: Response) {
         password: hashedPassword,
         name,
         role: UserRole.ATLETA,
-        coachId: coachId || null,
+        // ✅ Cambio aquí: usar sintaxis de relación
+        ...(coachId && {
+          coach: {
+            connect: {
+              id: coachId
+            }
+          }
+        }),
         birthDate: birthDate ? new Date(birthDate) : null,
         maxHeartRate: maxHeartRate ? parseInt(maxHeartRate) : null,
         restingHR: restingHR ? parseInt(restingHR) : null,
@@ -161,7 +168,6 @@ export async function createAthlete(req: Request, res: Response) {
         name: true,
         role: true,
         createdAt: true,
-        coachId: true,
         birthDate: true,
         maxHeartRate: true,
         restingHR: true,
