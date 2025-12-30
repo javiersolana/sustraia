@@ -9,28 +9,45 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  email             String             @unique
-  password          String
-  name              String
-  role              UserRole
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  coachId           String?
-  weeklyGoalKm      Float?
-  athleteGoals      AthleteGoal[]      @relation("AthleteGoals")
-  coachGoals        AthleteGoal[]      @relation("CoachGoals")
-  athleteNotes      AthleteNote[]      @relation("AthleteNotes")
-  coachNotes        AthleteNote[]      @relation("CoachNotes")
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Perfil fisiológico (Campos que faltaban)
+  birthDate    DateTime?
+  maxHeartRate Int?
+  restingHR    Int?
+  weeklyGoalKm Float?
+
+  // Relaciones generales
+  workouts          Workout[]
   completedWorkouts CompletedWorkout[]
   sentMessages      Message[]          @relation("SentMessages")
   receivedMessages  Message[]          @relation("ReceivedMessages")
   stats             Stat[]
   stravaToken       StravaToken?
-  coach             User?              @relation("CoachAthletes", fields: [coachId], references: [id])
-  athletes          User[]             @relation("CoachAthletes")
-  assignedWorkouts  Workout[]          @relation("AssignedWorkouts")
-  workouts          Workout[]
+
+  // Relaciones de Atleta
+  assignedWorkouts  Workout[]       @relation("AssignedWorkouts")
+  coach             User?           @relation("CoachAthletes", fields: [coachId], references: [id])
+  coachId           String?
+  assignedPlans     TrainingPlan[]  @relation("AthletePlans")
+
+  // Relaciones de Coach
+  athletes     User[]          @relation("CoachAthletes")
+  createdPlans TrainingPlan[]  @relation("CoachPlans")
+
+  // Notas
+  coachNotes   AthleteNote[]   @relation("CoachNotes")
+  athleteNotes AthleteNote[]   @relation("AthleteNotes")
+
+  // Objetivos
+  athleteGoals AthleteGoal[]   @relation("AthleteGoals")
+  coachGoals   AthleteGoal[]   @relation("CoachGoals")
 
   @@index([email])
   @@index([role])
