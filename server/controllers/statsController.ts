@@ -372,11 +372,11 @@ async function generateCoachAlerts(
   const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
   for (const athlete of athletes) {
-    // Check for missed training plans (plans in the past without completed workouts near that date)
-    const pastPlans = await prisma.trainingPlan.findMany({
+    // Check for missed assigned workouts (workouts in the past without completed workouts near that date)
+    const pastWorkouts = await prisma.workout.findMany({
       where: {
-        athleteId: athlete.id,
-        coachId,
+        assignedTo: athlete.id,
+        userId: coachId,
         date: {
           gte: sevenDaysAgo,
           lt: now,
@@ -385,13 +385,13 @@ async function generateCoachAlerts(
       orderBy: { date: 'desc' },
     });
 
-    for (const plan of pastPlans) {
-      const planDate = new Date(plan.date);
-      const dayBefore = new Date(planDate.getTime() - 24 * 60 * 60 * 1000);
-      const dayAfter = new Date(planDate.getTime() + 24 * 60 * 60 * 1000);
+    for (const workout of pastWorkouts) {
+      const workoutDate = new Date(workout.date);
+      const dayBefore = new Date(workoutDate.getTime() - 24 * 60 * 60 * 1000);
+      const dayAfter = new Date(workoutDate.getTime() + 24 * 60 * 60 * 1000);
 
-      // Check if there's a completed workout within ±1 day of the plan
-      const completedNearPlan = await prisma.completedWorkout.findFirst({
+      // Check if there's a completed workout within ±1 day of the assigned workout
+      const completedNearWorkout = await prisma.completedWorkout.findFirst({
         where: {
           userId: athlete.id,
           completedAt: {
@@ -401,16 +401,16 @@ async function generateCoachAlerts(
         },
       });
 
-      if (!completedNearPlan) {
-        const daysAgo = Math.floor((now.getTime() - planDate.getTime()) / (24 * 60 * 60 * 1000));
+      if (!completedNearWorkout) {
+        const daysAgo = Math.floor((now.getTime() - workoutDate.getTime()) / (24 * 60 * 60 * 1000));
         alerts.push({
-          id: `missed-${plan.id}`,
+          id: `missed-${workout.id}`,
           type: 'missed_workout',
           athleteId: athlete.id,
           athleteName: athlete.name,
-          message: `${athlete.name} no completó "${plan.title}"`,
-          detail: `Hace ${daysAgo} día${daysAgo > 1 ? 's' : ''} • ${plan.title}`,
-          createdAt: planDate,
+          message: `${athlete.name} no completó "${workout.title}"`,
+          detail: `Hace ${daysAgo} día${daysAgo > 1 ? 's' : ''} • ${workout.title}`,
+          createdAt: workoutDate,
         });
       }
     }
