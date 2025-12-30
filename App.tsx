@@ -6,6 +6,10 @@ import ComoFunciona from './pages/ComoFunciona';
 import Login from './pages/Login';
 import AthleteDashboard from './pages/dashboards/AthleteDashboard';
 import CoachDashboard from './pages/dashboards/CoachDashboard';
+import AthleteDetailView from './pages/dashboards/AthleteDetailView';
+import ProgressView from './pages/dashboards/ProgressView';
+import ActivitiesView from './pages/dashboards/ActivitiesView';
+import ActivityAnalysis from './pages/dashboards/ActivityAnalysis';
 import Admin from './pages/Admin';
 import StravaCallback from './pages/auth/StravaCallback';
 
@@ -25,7 +29,11 @@ export default function App() {
 
         {/* Dashboard pages without Layout (have their own Sidebar) */}
         <Route path="/dashboard/atleta" element={<AthleteDashboard />} />
+        <Route path="/dashboard/atleta/progreso" element={<ProgressView />} />
+        <Route path="/dashboard/atleta/actividades" element={<ActivitiesView />} />
+        <Route path="/dashboard/atleta/actividades/:id" element={<ActivityAnalysis />} />
         <Route path="/dashboard/coach" element={<CoachDashboard />} />
+        <Route path="/coach/athlete/:athleteId" element={<AthleteDetailView />} />
 
         {/* Admin panel */}
         <Route path="/admin" element={<Admin />} />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/dashboards/Sidebar';
 import { Role, AthleteRow } from '../../lib/types/dashboard';
 import {
@@ -32,6 +33,7 @@ interface CoachDashboardData {
 }
 
 const CoachDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -202,14 +204,14 @@ const CoachDashboard: React.FC = () => {
               <div className="p-6 border-b border-sustraia-light-gray flex justify-between items-center">
                 <h3 className="font-display font-bold text-xl">Rendimiento de Atletas</h3>
                 <div className="relative">
-                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                   <input
-                     type="text"
-                     placeholder="Buscar atleta..."
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                     className="pl-10 pr-4 py-2 rounded-full bg-gray-50 border-none text-sm focus:ring-2 focus:ring-sustraia-accent outline-none w-64"
-                   />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    placeholder="Buscar atleta..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 rounded-full bg-gray-50 border-none text-sm focus:ring-2 focus:ring-sustraia-accent outline-none w-64"
+                  />
                 </div>
               </div>
 
@@ -237,7 +239,8 @@ const CoachDashboard: React.FC = () => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: idx * 0.1 }}
-                            className="hover:bg-gray-50 transition-colors group"
+                            className="hover:bg-gray-50 transition-colors group cursor-pointer"
+                            onClick={() => navigate(`/coach/athlete/${athlete.id}`)}
                           >
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-3">
@@ -295,7 +298,7 @@ const CoachDashboard: React.FC = () => {
                 </table>
               </div>
               <div className="p-4 border-t border-sustraia-light-gray text-center">
-                 <button className="text-sm font-bold text-sustraia-gray hover:text-sustraia-accent transition-colors">Cargar más atletas</button>
+                <button className="text-sm font-bold text-sustraia-gray hover:text-sustraia-accent transition-colors">Cargar más atletas</button>
               </div>
             </Card>
           </div>
@@ -309,35 +312,35 @@ const CoachDashboard: React.FC = () => {
               </h3>
               <div className="space-y-4">
                 {[1, 2].map((i) => (
-                   <Card key={i} delay={6} className="bg-red-50/50 border-red-100 relative overflow-hidden group">
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400"></div>
-                      <div className="flex gap-4">
-                        <div className="min-w-[40px] h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                          <AlertCircle size={20} />
-                        </div>
-                        <div>
-                          <p className="font-bold text-sm text-gray-900">María López saltó 2 entrenamientos seguidos</p>
-                          <p className="text-xs text-gray-500 mt-1">Hace 4 horas • Plan Maratón</p>
-                          <button className="mt-3 text-xs font-bold bg-white px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-600 hover:text-white transition-colors">
-                            Contactar
-                          </button>
-                        </div>
+                  <Card key={i} delay={6} className="bg-red-50/50 border-red-100 relative overflow-hidden group">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400"></div>
+                    <div className="flex gap-4">
+                      <div className="min-w-[40px] h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                        <AlertCircle size={20} />
                       </div>
-                   </Card>
+                      <div>
+                        <p className="font-bold text-sm text-gray-900">María López saltó 2 entrenamientos seguidos</p>
+                        <p className="text-xs text-gray-500 mt-1">Hace 4 horas • Plan Maratón</p>
+                        <button className="mt-3 text-xs font-bold bg-white px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-600 hover:text-white transition-colors">
+                          Contactar
+                        </button>
+                      </div>
+                    </div>
+                  </Card>
                 ))}
               </div>
             </section>
 
-             {/* General Compliance Chart */}
+            {/* General Compliance Chart */}
             <Card delay={7} className="flex-1 flex flex-col">
               <h3 className="font-display font-bold text-xl mb-6">Cumplimiento Global</h3>
               <div className="flex-1 min-h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={complianceData} barGap={0} barCategoryGap="20%">
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#666666', fontSize: 12}} dy={10} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#666666', fontSize: 12 }} dy={10} />
                     <Tooltip
-                      cursor={{fill: '#F5F5F7'}}
+                      cursor={{ fill: '#F5F5F7' }}
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
                     />
                     <Bar dataKey="scheduled" name="Programado" fill="#E5E5E5" radius={[4, 4, 0, 0]} />

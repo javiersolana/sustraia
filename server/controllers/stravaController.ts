@@ -5,11 +5,14 @@ import {
   storeTokens,
   getActivities,
   getActivity,
+  getActivityLaps,
   syncActivityToWorkout,
   disconnectStrava,
   importInitialActivities,
+  getDetailedActivity,
 } from '../services/stravaService';
 import { prisma } from '../config/prisma';
+import { classifyWorkout, WorkoutType } from '../services/workoutClassifier';
 
 /**
  * Get Strava OAuth authorization URL
@@ -239,5 +242,169 @@ export async function handleWebhook(req: Request, res: Response) {
   } catch (error) {
     console.error('Webhook handling error:', error);
     res.sendStatus(500);
+  }
+}
+
+/**
+ * Get activity laps/splits
+ */
+export async function getActivityLapsController(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const activityId = parseInt(req.params.activityId);
+
+    if (isNaN(activityId)) {
+      return res.status(400).json({ error: 'Invalid activity ID' });
+    }
+
+    const laps = await getActivityLaps(req.user.userId, activityId);
+
+    res.json({ laps });
+  } catch (error) {
+    console.error('Get activity laps error:', error);
+    res.status(500).json({ error: 'Failed to fetch activity laps' });
+  }
+}
+
+/**
+ * Map WorkoutType from classifier to WorkoutLabel enum
+ */
+function mapWorkoutTypeToLabel(workoutType: WorkoutType) {
+  const mapping: Record<WorkoutType, any> = {
+    SERIES: 'SERIES',
+    TEMPO: 'TEMPO',
+    RODAJE: 'RODAJE',
+    CUESTAS: 'CUESTAS',
+    RECUPERACION: 'RECUPERACION',
+    PROGRESIVO: 'PROGRESIVO',
+    FARTLEK: 'FARTLEK',
+    COMPETICION: 'COMPETICION',
+    OTRO: 'OTRO'
+  };
+
+  return mapping[workoutType] || 'OTRO';
+}
+
+/**
+ * Reclassify all workouts for the current user
+ */
+export async function reclassifyWorkouts(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const userId = req.user.userId;
+
+    console.log(`🔄 Starting reclassification for user ${userId}`);
+
+    // Find workouts without classification
+    const workouts = await prisma.completedWorkout.findMany({
+      where: {
+        userId,
+        stravaId: { not: null },
+        OR: [
+          { workoutStructure: null },
+          { humanReadable: null },
+          { classificationConfidence: null }
+        ]
+      },
+      orderBy: { completedAt: 'desc' }
+    });
+
+    console.log(`📋 Found ${workouts.length} workouts to reclassify`);
+
+    if (workouts.length === 0) {
+      return res.json({
+        success: true,
+        reclassified: 0,
+        failed: 0,
+        message: 'All workouts are already classified'
+      });
+    }
+
+    let success = 0;
+    let failed = 0;
+    const results: any[] = [];
+
+    for (const workout of workouts) {
+      try {
+        if (!workout.stravaId) {
+          failed++;
+          continue;
+        }
+
+        console.log(`🔍 Reclassifying: ${workout.title}`);
+
+        // Get detailed activity from Strava
+        const detailedActivity = await getDetailedActivity(userId, parseInt(workout.stravaId));
+
+        console.log(`   📊 Splits: ${detailedActivity.splits_metric?.length || 0}`);
+        console.log(`   🏁 Laps: ${detailedActivity.laps?.length || 0}`);
+
+        // Classify
+        const classification = classifyWorkout(detailedActivity);
+        const label = mapWorkoutTypeToLabel(classification.workout_type);
+
+        console.log(`   ✅ Classified as: ${classification.workout_type} (${classification.confidence})`);
+
+        // Build complete structure
+        const completeStructure = {
+          classification: classification.structure,
+          rawData: {
+            splits: detailedActivity.splits_metric,
+            laps: detailedActivity.laps,
+            elevation: detailedActivity.total_elevation_gain
+          }
+        };
+
+        // Update in database
+        await prisma.completedWorkout.update({
+          where: { id: workout.id },
+          data: {
+            label,
+            workoutStructure: completeStructure as any,
+            humanReadable: classification.human_readable,
+            classificationConfidence: classification.confidence
+          }
+        });
+
+        success++;
+        results.push({
+          id: workout.id,
+          title: workout.title,
+          type: classification.workout_type,
+          description: classification.human_readable,
+          confidence: classification.confidence
+        });
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+      } catch (error: any) {
+        console.error(`   ❌ Error: ${error.message}`);
+        failed++;
+      }
+    }
+
+    console.log(`✅ Reclassification complete: ${success} success, ${failed} failed`);
+
+    res.json({
+      success: true,
+      reclassified: success,
+      failed,
+      total: workouts.length,
+      results
+    });
+
+  } catch (error: any) {
+    console.error('Reclassify workouts error:', error);
+    res.status(500).json({
+      error: 'Failed to reclassify workouts',
+      details: error?.message
+    });
   }
 }

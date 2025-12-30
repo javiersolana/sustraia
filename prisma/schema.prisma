@@ -33,7 +33,25 @@ enum WorkoutLabel {
   TEMPO
   RODAJE
   CUESTAS
+  RECUPERACION
+  PROGRESIVO
+  FARTLEK
+  COMPETICION
   OTRO
+}
+
+enum BlockType {
+  WARMUP
+  RUN
+  INTERVALS
+  REST
+  COOLDOWN
+}
+
+enum TargetType {
+  HEART_RATE
+  PACE
+  OPEN
 }
 
 model User {
@@ -45,6 +63,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Physiological profile (optional, for HR zones)
+  birthDate    DateTime?  // For calculating age and FCmax
+  maxHeartRate Int?       // Manual FCmax if known
+  restingHR    Int?       // Resting HR for Karvonen formula
+
   // Relations
   workouts          Workout[]
   completedWorkouts CompletedWorkout[]
@@ -54,12 +77,14 @@ model User {
   stravaToken       StravaToken?
 
   // Athlete-specific relations
-  assignedWorkouts Workout[] @relation("AssignedWorkouts")
-  coach            User?     @relation("CoachAthletes", fields: [coachId], references: [id])
-  coachId          String?
+  assignedWorkouts  Workout[]       @relation("AssignedWorkouts")
+  coach             User?           @relation("CoachAthletes", fields: [coachId], references: [id])
+  coachId           String?
+  assignedPlans     TrainingPlan[]  @relation("AthletePlans")
 
   // Coach-specific relations
-  athletes User[] @relation("CoachAthletes")
+  athletes     User[]          @relation("CoachAthletes")
+  createdPlans TrainingPlan[]  @relation("CoachPlans")
 
   @@index([email])
   @@index([role])
@@ -91,23 +116,26 @@ model Workout {
 }
 
 model CompletedWorkout {
-  id             String        @id @default(cuid())
-  workoutId      String?       @unique // Optional - null for Strava-only activities
-  userId         String
-  title          String?       // From Strava activity name
-  label          WorkoutLabel  @default(OTRO)
-  completedAt    DateTime      @default(now())
-  actualDuration Int?          // in seconds
-  actualDistance Float?        // in meters
-  avgHeartRate   Int?
-  maxHeartRate   Int?
-  calories       Int?
-  feeling        String?       // 1-5 or descriptive
-  notes          String?
-  stravaId       String?       @unique // Strava activity ID
-  stravaType     String?       // Original Strava activity type
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                       String        @id @default(cuid())
+  workoutId                String?       @unique // Optional - null for Strava-only activities
+  userId                   String
+  title                    String?       // From Strava activity name
+  label                    WorkoutLabel  @default(OTRO)
+  completedAt              DateTime      @default(now())
+  actualDuration           Int?          // in seconds
+  actualDistance           Float?        // in meters
+  avgHeartRate             Int?
+  maxHeartRate             Int?
+  calories                 Int?
+  feeling                  String?       // 1-5 or descriptive
+  notes                    String?
+  stravaId                 String?       @unique // Strava activity ID
+  stravaType               String?       // Original Strava activity type
+  workoutStructure         Json?         // Detailed classification structure
+  classificationConfidence String?       // 'high' | 'medium' | 'low'
+  humanReadable            String?       // Human-friendly description like "8x400m @ 1:25/400m"
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
 
   // Relations
   workout Workout? @relation(fields: [workoutId], references: [id], onDelete: Cascade)
@@ -172,4 +200,60 @@ model StravaToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model TrainingPlan {
+  id          String   @id @default(cuid())
+  coachId     String
+  athleteId   String
+  date        DateTime
+  title       String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  coach   User            @relation("CoachPlans", fields: [coachId], references: [id], onDelete: Cascade)
+  athlete User            @relation("AthletePlans", fields: [athleteId], references: [id], onDelete: Cascade)
+  blocks  TrainingBlock[]
+
+  @@index([coachId])
+  @@index([athleteId])
+  @@index([date])
+}
+
+model TrainingBlock {
+  id              String      @id @default(cuid())
+  planId          String
+  order           Int
+  type            BlockType
+  durationSeconds Int?        // Duration in seconds (if by time)
+  distanceMeters  Float?      // Distance in meters (if by distance)
+
+  // For intervals: repetition count and rest between reps
+  repetitions     Int?
+  restSeconds     Int?
+
+  // Pace targets (seconds per km)
+  paceMin         Float?
+  paceMax         Float?
+
+  // HR targets (bpm)
+  hrMin           Int?
+  hrMax           Int?
+
+  // Legacy target fields (for backwards compatibility)
+  targetType      TargetType?
+  targetMin       Float?      // Min HR (bpm) or min pace (sec/km)
+  targetMax       Float?      // Max HR (bpm) or max pace (sec/km)
+
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@index([order])
 }

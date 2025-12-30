@@ -31,6 +31,9 @@ interface User {
   createdAt: string;
   coachId?: string;
   coach?: { id: string; name: string; email: string };
+  birthDate?: string;
+  maxHeartRate?: number;
+  restingHR?: number;
   _count: { athletes: number };
 }
 
@@ -59,6 +62,9 @@ const AdminPanel: React.FC = () => {
     email: '',
     password: '',
     coachId: '',
+    birthDate: '',
+    maxHeartRate: '',
+    restingHR: '',
   });
 
   // Create coach form state
@@ -72,6 +78,9 @@ const AdminPanel: React.FC = () => {
   const [editForm, setEditForm] = useState({
     name: '',
     coachId: '',
+    birthDate: '',
+    maxHeartRate: '',
+    restingHR: '',
   });
 
   useEffect(() => {
@@ -102,9 +111,14 @@ const AdminPanel: React.FC = () => {
   const handleCreateAthlete = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.admin.createAthlete(createForm);
+      await api.admin.createAthlete({
+        ...createForm,
+        birthDate: createForm.birthDate || undefined,
+        maxHeartRate: createForm.maxHeartRate ? parseInt(createForm.maxHeartRate) : undefined,
+        restingHR: createForm.restingHR ? parseInt(createForm.restingHR) : undefined,
+      });
       setShowCreateForm(false);
-      setCreateForm({ name: '', email: '', password: '', coachId: '' });
+      setCreateForm({ name: '', email: '', password: '', coachId: '', birthDate: '', maxHeartRate: '', restingHR: '' });
       fetchData();
     } catch (err: any) {
       alert(err.message || 'Failed to create athlete');
@@ -131,6 +145,9 @@ const AdminPanel: React.FC = () => {
       await api.admin.updateUser(editingUser.id, {
         name: editForm.name,
         coachId: editForm.coachId || null,
+        birthDate: editForm.birthDate || undefined,
+        maxHeartRate: editForm.maxHeartRate ? parseInt(editForm.maxHeartRate) : undefined,
+        restingHR: editForm.restingHR ? parseInt(editForm.restingHR) : undefined,
       });
       setEditingUser(null);
       fetchData();
@@ -336,6 +353,9 @@ const AdminPanel: React.FC = () => {
                               setEditForm({
                                 name: user.name,
                                 coachId: user.coachId || '',
+                                birthDate: (user as any).birthDate ? new Date((user as any).birthDate).toISOString().split('T')[0] : '',
+                                maxHeartRate: (user as any).maxHeartRate?.toString() || '',
+                                restingHR: (user as any).restingHR?.toString() || '',
                               });
                             }}
                             className="p-2 hover:bg-blue-50 rounded-full transition-colors text-sustraia-accent"
@@ -419,6 +439,47 @@ const AdminPanel: React.FC = () => {
                   </option>
                 ))}
               </select>
+            </div>
+            {/* Physiological Profile */}
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <p className="text-sm font-bold text-sustraia-text mb-3">Perfil Fisiológico (opcional)</p>
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-sustraia-gray mb-1">Fecha de Nacimiento</label>
+                  <input
+                    type="date"
+                    value={createForm.birthDate}
+                    onChange={(e) => setCreateForm({ ...createForm, birthDate: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-sustraia-light-gray focus:ring-2 focus:ring-sustraia-accent outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-sustraia-gray mb-1">FC Máxima</label>
+                    <input
+                      type="number"
+                      placeholder="Ej: 185"
+                      min="100"
+                      max="250"
+                      value={createForm.maxHeartRate}
+                      onChange={(e) => setCreateForm({ ...createForm, maxHeartRate: e.target.value })}
+                      className="w-full px-4 py-3 rounded-2xl border border-sustraia-light-gray focus:ring-2 focus:ring-sustraia-accent outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-sustraia-gray mb-1">FC Reposo</label>
+                    <input
+                      type="number"
+                      placeholder="Ej: 50"
+                      min="30"
+                      max="120"
+                      value={createForm.restingHR}
+                      onChange={(e) => setCreateForm({ ...createForm, restingHR: e.target.value })}
+                      className="w-full px-4 py-3 rounded-2xl border border-sustraia-light-gray focus:ring-2 focus:ring-sustraia-accent outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex gap-3 pt-4">
               <button
@@ -524,6 +585,49 @@ const AdminPanel: React.FC = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+            {/* Physiological Profile */}
+            {editingUser.role === 'ATLETA' && (
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                <p className="text-sm font-bold text-sustraia-text mb-3">Perfil Fisiológico</p>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-sustraia-gray mb-1">Fecha de Nacimiento</label>
+                    <input
+                      type="date"
+                      value={editForm.birthDate}
+                      onChange={(e) => setEditForm({ ...editForm, birthDate: e.target.value })}
+                      className="w-full px-4 py-3 rounded-2xl border border-sustraia-light-gray focus:ring-2 focus:ring-sustraia-accent outline-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-sustraia-gray mb-1">FC Máxima</label>
+                      <input
+                        type="number"
+                        placeholder="220 - edad"
+                        min="100"
+                        max="250"
+                        value={editForm.maxHeartRate}
+                        onChange={(e) => setEditForm({ ...editForm, maxHeartRate: e.target.value })}
+                        className="w-full px-4 py-3 rounded-2xl border border-sustraia-light-gray focus:ring-2 focus:ring-sustraia-accent outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-sustraia-gray mb-1">FC Reposo</label>
+                      <input
+                        type="number"
+                        placeholder="Karvonen"
+                        min="30"
+                        max="120"
+                        value={editForm.restingHR}
+                        onChange={(e) => setEditForm({ ...editForm, restingHR: e.target.value })}
+                        className="w-full px-4 py-3 rounded-2xl border border-sustraia-light-gray focus:ring-2 focus:ring-sustraia-accent outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             <div className="flex gap-3 pt-4">

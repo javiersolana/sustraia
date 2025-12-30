@@ -10,6 +10,7 @@ import messageRoutes from './routes/messageRoutes';
 import stravaRoutes from './routes/stravaRoutes';
 import statsRoutes from './routes/statsRoutes';
 import adminRoutes from './routes/adminRoutes';
+import trainingPlanRoutes from './routes/trainingPlanRoutes';
 
 // Validate environment variables
 try {
@@ -56,6 +57,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/strava', stravaRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/training-plans', trainingPlanRoutes);
 
 // Error handling
 app.use(notFound);

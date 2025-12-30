@@ -1,25 +1,41 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../../components/dashboards/Sidebar';
+import Calendar from '../../components/dashboards/Calendar';
+import ActivityDetailModal from '../../components/dashboards/ActivityDetailModal';
 import { Role, WeeklyActivity } from '../../lib/types/dashboard';
-import { Bell, Flame, ChevronRight, Clock, MapPin, PlayCircle, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Bell, Flame, ChevronRight, Clock, MapPin, PlayCircle, CheckCircle2, Circle, Loader2, X } from 'lucide-react';
 import Card from '../../components/dashboards/ui/Card';
 import Badge from '../../components/dashboards/ui/Badge';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart, Bar, ResponsiveContainer, Cell } from 'recharts';
-import { api, type Stats, type Workout, type CompletedWorkout } from '../../lib/api/client';
+import { api, type Stats, type Workout, type CompletedWorkout, type TrainingPlan, type User } from '../../lib/api/client';
+
+interface CalendarEvent {
+  id: string;
+  date: Date;
+  type: 'plan' | 'completed';
+  title: string;
+  data: TrainingPlan | (CompletedWorkout & { title?: string });
+}
 
 interface DashboardData {
   stats: Stats;
   upcomingWorkouts: Workout[];
   recentCompleted: CompletedWorkout[];
   unreadMessages: number;
-  user?: { id: string; name: string; email: string };
+  user?: { id: string; name: string; email: string; coachId?: string };
+  coach?: { id: string; name: string; email: string } | null;
 }
 
 const AthleteDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [trainingPlans, setTrainingPlans] = useState<TrainingPlan[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [showFullCalendar, setShowFullCalendar] = useState(false);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -30,10 +46,34 @@ const AthleteDashboard: React.FC = () => {
           api.auth.getProfile(),
         ]);
 
+        // Get coach info if user has one
+        let coachData = null;
+        if ((profileData.user as any).coachId) {
+          try {
+            const coachResponse = await api.admin.getAllUsers();
+            const coach = coachResponse.users.find(u => u.id === (profileData.user as any).coachId);
+            if (coach) {
+              coachData = { id: coach.id, name: coach.name, email: coach.email };
+            }
+          } catch (err) {
+            console.log('Could not fetch coach info:', err);
+          }
+        }
+
         setData({
           ...dashboardData,
           user: profileData.user,
+          coach: coachData,
         });
+
+        // Fetch training plans for athlete
+        try {
+          const plans = await api.trainingPlans.getAll();
+          setTrainingPlans(plans);
+        } catch (err) {
+          console.log('No training plans or error fetching:', err);
+        }
+
         setError(null);
       } catch (err: any) {
         console.error('Dashboard error:', err);
@@ -110,6 +150,24 @@ const AthleteDashboard: React.FC = () => {
     };
   });
 
+  // Generate calendar events from training plans and completed workouts
+  const calendarEvents: CalendarEvent[] = [
+    ...trainingPlans.map(plan => ({
+      id: plan.id,
+      date: new Date(plan.date),
+      type: 'plan' as const,
+      title: plan.title,
+      data: plan,
+    })),
+    ...data.recentCompleted.map(workout => ({
+      id: workout.id,
+      date: new Date(workout.completedAt),
+      type: 'completed' as const,
+      title: (workout as any).title || 'Entrenamiento completado',
+      data: workout,
+    })),
+  ];
+
   // Get next workout
   const nextWorkout = data.upcomingWorkouts[0];
 
@@ -138,16 +196,16 @@ const AthleteDashboard: React.FC = () => {
           </div>
 
           <div className="relative">
-             <motion.button
-               whileHover={{ scale: 1.05 }}
-               whileTap={{ scale: 0.95 }}
-               className="w-12 h-12 rounded-full bg-white border border-sustraia-light-gray flex items-center justify-center shadow-sm text-sustraia-text"
-             >
-               <Bell size={20} />
-             </motion.button>
-             {data.unreadMessages > 0 && (
-               <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-sustraia-base"></span>
-             )}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-12 h-12 rounded-full bg-white border border-sustraia-light-gray flex items-center justify-center shadow-sm text-sustraia-text"
+            >
+              <Bell size={20} />
+            </motion.button>
+            {data.unreadMessages > 0 && (
+              <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full border-2 border-sustraia-base"></span>
+            )}
           </div>
         </header>
 
@@ -168,12 +226,12 @@ const AthleteDashboard: React.FC = () => {
                   <div className="flex items-center gap-4 text-white/80 text-sm font-medium">
                     {nextWorkout.duration && (
                       <span className="flex items-center gap-1">
-                        <Clock size={16}/> {Math.floor(nextWorkout.duration / 60)} min
+                        <Clock size={16} /> {Math.floor(nextWorkout.duration / 60)} min
                       </span>
                     )}
                     {nextWorkout.distance && (
                       <span className="flex items-center gap-1">
-                        <MapPin size={16}/> {(nextWorkout.distance / 1000).toFixed(1)} km
+                        <MapPin size={16} /> {(nextWorkout.distance / 1000).toFixed(1)} km
                       </span>
                     )}
                   </div>
@@ -193,11 +251,11 @@ const AthleteDashboard: React.FC = () => {
           <Card delay={1} className="flex flex-col justify-between">
             <div className="flex justify-between items-start">
               <div>
-                 <p className="text-sustraia-gray font-medium text-sm uppercase tracking-wide">Entrenamientos semanales</p>
-                 <div className="flex items-baseline gap-2 mt-2">
-                   <span className="font-display font-black text-5xl text-sustraia-text">{data.stats.weeklyWorkouts || 0}</span>
-                   <span className="text-sustraia-gray font-medium">sesiones</span>
-                 </div>
+                <p className="text-sustraia-gray font-medium text-sm uppercase tracking-wide">Entrenamientos semanales</p>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <span className="font-display font-black text-5xl text-sustraia-text">{data.stats.weeklyWorkouts || 0}</span>
+                  <span className="text-sustraia-gray font-medium">sesiones</span>
+                </div>
               </div>
               <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center">
                 <Flame className="text-orange-500" size={20} />
@@ -218,39 +276,39 @@ const AthleteDashboard: React.FC = () => {
 
           {/* Widget C: Weekly Goal */}
           <Card delay={2} className="flex flex-col items-center justify-center relative">
-             {(() => {
-               const weeklyGoal = 20000; // 20km default goal
-               const current = data.stats.weeklyDistance || 0;
-               const percentage = Math.min((current / weeklyGoal) * 100, 100);
-               return (
-                 <>
-                   <div className="relative w-40 h-40">
-                     <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                       <circle cx="50" cy="50" r="45" fill="none" stroke="#E5E5E5" strokeWidth="8" />
-                       <motion.circle
-                         initial={{ pathLength: 0 }}
-                         animate={{ pathLength: percentage / 100 }}
-                         transition={{ duration: 1.5, ease: "easeOut" }}
-                         cx="50" cy="50" r="45"
-                         fill="none"
-                         stroke="#0033FF"
-                         strokeWidth="8"
-                         strokeLinecap="round"
-                         strokeDasharray="1"
-                         strokeDashoffset="0"
-                       />
-                     </svg>
-                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                       <span className="font-display font-bold text-xl">
-                         {(current / 1000).toFixed(1)} / {weeklyGoal / 1000}
-                       </span>
-                       <span className="text-xs text-sustraia-gray font-medium uppercase">km</span>
-                     </div>
-                   </div>
-                   <p className="mt-4 font-medium text-sustraia-gray">{percentage.toFixed(0)}% del objetivo semanal</p>
-                 </>
-               );
-             })()}
+            {(() => {
+              const weeklyGoal = 20000; // 20km default goal
+              const current = data.stats.weeklyDistance || 0;
+              const percentage = Math.min((current / weeklyGoal) * 100, 100);
+              return (
+                <>
+                  <div className="relative w-40 h-40">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="#E5E5E5" strokeWidth="8" />
+                      <motion.circle
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: percentage / 100 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        cx="50" cy="50" r="45"
+                        fill="none"
+                        stroke="#0033FF"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray="1"
+                        strokeDashoffset="0"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <span className="font-display font-bold text-xl">
+                        {(current / 1000).toFixed(1)} / {weeklyGoal / 1000}
+                      </span>
+                      <span className="text-xs text-sustraia-gray font-medium uppercase">km</span>
+                    </div>
+                  </div>
+                  <p className="mt-4 font-medium text-sustraia-gray">{percentage.toFixed(0)}% del objetivo semanal</p>
+                </>
+              );
+            })()}
           </Card>
         </div>
 
@@ -258,7 +316,12 @@ const AthleteDashboard: React.FC = () => {
         <section className="mb-10">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-display font-bold text-xl">Tu Semana</h3>
-            <button className="text-sm font-bold text-sustraia-accent hover:text-sustraia-accent-hover">Ver calendario completo</button>
+            <button
+              onClick={() => setShowFullCalendar(true)}
+              className="text-sm font-bold text-sustraia-accent hover:text-sustraia-accent-hover"
+            >
+              Ver calendario completo
+            </button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {weeklyCalendar.map((day, idx) => (
@@ -286,7 +349,7 @@ const AthleteDashboard: React.FC = () => {
 
                 <div className="mt-2">
                   {day.type === 'REST' ? (
-                     <span className="text-sm font-medium text-gray-400">Descanso</span>
+                    <span className="text-sm font-medium text-gray-400">Descanso</span>
                   ) : (
                     <Badge variant={day.type === 'RUN' ? 'accent' : 'warning'} className="w-full justify-center">
                       {day.type === 'RUN' ? 'Carrera' : 'Fuerza'}
@@ -301,29 +364,54 @@ const AthleteDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Last Sessions */}
           <section className="lg:col-span-2">
-            <h3 className="font-display font-bold text-xl mb-6">Últimas sesiones</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-display font-bold text-xl">Últimas sesiones</h3>
+              <button
+                onClick={() => navigate('/dashboard/atleta/actividades')}
+                className="text-sm font-bold text-sustraia-accent hover:text-sustraia-accent-hover"
+              >
+                Ver todas →
+              </button>
+            </div>
             <div className="space-y-4">
               {data.recentCompleted.length > 0 ? (
-                data.recentCompleted.map((completed, i) => {
+                data.recentCompleted.slice(0, 5).map((completed, i) => {
                   const duration = completed.actualDuration || 0;
                   const distance = completed.actualDistance || 0;
                   const pace = distance > 0 ? (duration / (distance / 1000)) : 0;
+                  const title = (completed as any).title || completed.workout?.title || 'Entrenamiento';
+                  const displayText = (completed as any).humanReadable || title;
+
+                  // Get relative time
+                  const getRelativeTime = (date: string): string => {
+                    const now = new Date();
+                    const activityDate = new Date(date);
+                    const diffHours = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60));
+                    const diffDays = Math.floor(diffHours / 24);
+
+                    if (diffHours < 1) return 'Hace menos de 1 hora';
+                    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+                    if (diffDays === 1) return 'Ayer';
+                    if (diffDays < 7) return `Hace ${diffDays} días`;
+                    return activityDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                  };
 
                   return (
-                    <Card key={completed.id} delay={4 + i} noPadding className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group cursor-pointer">
+                    <Card
+                      key={completed.id}
+                      delay={4 + i}
+                      noPadding
+                      className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 group cursor-pointer hover:shadow-lg"
+                      onClick={() => navigate(`/dashboard/atleta/actividades/${completed.id}`)}
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center group-hover:bg-sustraia-accent transition-colors">
                           <PlayCircle className="text-sustraia-accent group-hover:text-white transition-colors" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-sustraia-text">{completed.workout?.title || 'Entrenamiento'}</h4>
+                          <h4 className="font-bold text-sustraia-text">{displayText}</h4>
                           <p className="text-sm text-sustraia-gray">
-                            {new Date(completed.completedAt).toLocaleDateString('es-ES', {
-                              day: 'numeric',
-                              month: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
+                            {getRelativeTime(completed.completedAt)}
                           </p>
                         </div>
                       </div>
@@ -354,61 +442,166 @@ const AthleteDashboard: React.FC = () => {
                       </div>
 
                       <button className="hidden md:block text-sustraia-accent font-bold text-sm hover:underline">
-                        Ver análisis
+                        Ver análisis →
                       </button>
                     </Card>
                   );
                 })
               ) : (
                 <Card delay={4} className="text-center py-12">
-                  <p className="text-sustraia-gray">No hay sesiones completadas aún</p>
+                  <p className="text-sustraia-gray mb-4">Aún no has completado ningún entreno</p>
+                  <button
+                    onClick={() => navigate('/dashboard/atleta')}
+                    className="text-sustraia-accent font-bold text-sm hover:underline"
+                  >
+                    Sincroniza tu Strava para empezar
+                  </button>
                 </Card>
               )}
             </div>
           </section>
 
-          {/* Coach Messages */}
-          <section>
-            <h3 className="font-display font-bold text-xl mb-6">Coach</h3>
-            <Card delay={8} className="h-full">
-              <div className="flex items-center gap-4 mb-6">
-                <img src="https://picsum.photos/100/100" alt="Coach" className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" />
-                <div>
-                  <h4 className="font-bold text-sm">Coach David</h4>
-                  <p className="text-xs text-sustraia-gray">Head Coach</p>
+          {/* Coach Info */}
+          <section className="mb-8">
+            <h3 className="font-display font-bold text-xl mb-4">Tu Coach</h3>
+            {data.coach ? (
+              <Card delay={8} className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-sustraia-accent text-white flex items-center justify-center font-bold text-lg">
+                  {data.coach.name.charAt(0).toUpperCase()}
                 </div>
-              </div>
-
-              <div className="space-y-4">
-                 <div className="bg-gray-50 p-4 rounded-2xl rounded-tl-none border border-gray-100">
-                    <div className="flex justify-between items-center mb-2">
-                       <Badge variant="accent">NUEVO</Badge>
-                       <span className="text-xs text-gray-400">Hace 2h</span>
-                    </div>
-                    <p className="text-sm text-sustraia-text leading-relaxed">
-                      ¡Gran trabajo ayer! Mantuvisite el ritmo muy estable en los últimos kilómetros. Para hoy, enfócate en la técnica.
-                    </p>
-                 </div>
-
-                 <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 opacity-60">
-                    <div className="flex justify-between items-center mb-2">
-                       <span className="text-xs text-gray-400">Hace 2d</span>
-                    </div>
-                    <p className="text-sm text-sustraia-text leading-relaxed truncate">
-                      He ajustado las cargas de la próxima semana basándome en tu feedback...
-                    </p>
-                 </div>
-              </div>
-
-              <button className="w-full mt-6 py-3 rounded-full border border-sustraia-light-gray font-bold text-sm text-sustraia-text hover:bg-gray-50 transition-colors">
-                Ver conversación completa
-              </button>
-            </Card>
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">{data.coach.name}</h4>
+                  <p className="text-xs text-sustraia-gray">{data.coach.email}</p>
+                </div>
+              </Card>
+            ) : (
+              <Card delay={8} className="text-center py-8">
+                <p className="text-sustraia-gray text-sm mb-3">Aún no tienes un coach asignado</p>
+                <p className="text-xs text-gray-400">Contacta con un administrador para asignar uno</p>
+              </Card>
+            )}
           </section>
         </div>
       </main>
+
+      {/* Fullscreen Calendar Modal */}
+      <AnimatePresence>
+        {showFullCalendar && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-sustraia-base z-50 flex flex-col"
+          >
+            {/* Header */}
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-white">
+              <h2 className="font-display font-bold text-xl">Calendario</h2>
+              <button
+                onClick={() => setShowFullCalendar(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Calendar */}
+            <div className="flex-1 overflow-auto p-4">
+              <Calendar
+                events={calendarEvents}
+                onEventClick={(event) => setSelectedEvent(event)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Activity Detail Modal */}
+      <AnimatePresence>
+        {selectedEvent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedEvent(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            >
+              {selectedEvent.type === 'plan' ? (
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-6">
+                    <h3 className="font-display font-bold text-xl">{selectedEvent.title}</h3>
+                    <button
+                      onClick={() => setSelectedEvent(null)}
+                      className="p-2 hover:bg-gray-100 rounded-full"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+
+                  <p className="text-sustraia-gray mb-4">
+                    {new Date(selectedEvent.date).toLocaleDateString('es-ES', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long'
+                    })}
+                  </p>
+
+                  {(selectedEvent.data as TrainingPlan).description && (
+                    <p className="text-gray-600 mb-4">
+                      {(selectedEvent.data as TrainingPlan).description}
+                    </p>
+                  )}
+
+                  <h4 className="font-bold text-sm uppercase text-gray-500 mb-3">Bloques de entrenamiento</h4>
+                  <div className="space-y-2">
+                    {(selectedEvent.data as TrainingPlan).blocks?.map((block, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                        <span className={`w-3 h-3 rounded-full ${block.type === 'WARMUP' ? 'bg-yellow-400' :
+                          block.type === 'RUN' ? 'bg-green-500' :
+                            block.type === 'INTERVALS' ? 'bg-red-500' :
+                              block.type === 'REST' ? 'bg-gray-400' :
+                                'bg-blue-400'
+                          }`} />
+                        <div className="flex-1">
+                          <span className="font-medium text-sm">
+                            {block.type === 'WARMUP' ? 'Calentamiento' :
+                              block.type === 'RUN' ? 'Carrera' :
+                                block.type === 'INTERVALS' ? 'Series' :
+                                  block.type === 'REST' ? 'Descanso' :
+                                    'Enfriamiento'}
+                          </span>
+                          <span className="text-xs text-gray-500 ml-2">
+                            {block.durationSeconds
+                              ? `${Math.floor(block.durationSeconds / 60)} min`
+                              : block.distanceMeters
+                                ? `${(block.distanceMeters / 1000).toFixed(1)} km`
+                                : ''
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <ActivityDetailModal
+                  activity={selectedEvent.data as CompletedWorkout}
+                  onClose={() => setSelectedEvent(null)}
+                />
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
 export default AthleteDashboard;
+

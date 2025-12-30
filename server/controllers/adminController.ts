@@ -101,6 +101,9 @@ export const createAthleteValidation = [
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
   body('coachId').optional().isString(),
+  body('birthDate').optional().isISO8601().withMessage('Invalid date format'),
+  body('maxHeartRate').optional().isInt({ min: 100, max: 250 }).withMessage('Max HR must be between 100-250'),
+  body('restingHR').optional().isInt({ min: 30, max: 120 }).withMessage('Resting HR must be between 30-120'),
 ];
 
 export async function createAthlete(req: Request, res: Response) {
@@ -110,7 +113,7 @@ export async function createAthlete(req: Request, res: Response) {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, name, coachId } = req.body;
+    const { email, password, name, coachId, birthDate, maxHeartRate, restingHR } = req.body;
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -143,6 +146,9 @@ export async function createAthlete(req: Request, res: Response) {
         name,
         role: 'ATLETA',
         coachId: coachId || null,
+        birthDate: birthDate ? new Date(birthDate) : null,
+        maxHeartRate: maxHeartRate ? parseInt(maxHeartRate) : null,
+        restingHR: restingHR ? parseInt(restingHR) : null,
       },
       select: {
         id: true,
@@ -151,6 +157,9 @@ export async function createAthlete(req: Request, res: Response) {
         role: true,
         createdAt: true,
         coachId: true,
+        birthDate: true,
+        maxHeartRate: true,
+        restingHR: true,
         coach: {
           select: {
             id: true,
@@ -223,11 +232,14 @@ export async function createCoach(req: Request, res: Response) {
 }
 
 /**
- * Update user (assign/reassign coach)
+ * Update user (assign/reassign coach, update profile)
  */
 export const updateUserValidation = [
   body('name').optional().trim().isLength({ min: 2 }),
   body('coachId').optional().isString(),
+  body('birthDate').optional().isISO8601().withMessage('Invalid date format'),
+  body('maxHeartRate').optional().isInt({ min: 100, max: 250 }),
+  body('restingHR').optional().isInt({ min: 30, max: 120 }),
 ];
 
 export async function updateUser(req: Request, res: Response) {
@@ -238,7 +250,7 @@ export async function updateUser(req: Request, res: Response) {
     }
 
     const { id } = req.params;
-    const { name, coachId } = req.body;
+    const { name, coachId, birthDate, maxHeartRate, restingHR } = req.body;
 
     // Verify user exists
     const user = await prisma.user.findUnique({
@@ -266,6 +278,9 @@ export async function updateUser(req: Request, res: Response) {
       data: {
         ...(name && { name }),
         ...(coachId !== undefined && { coachId: coachId || null }),
+        ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null }),
+        ...(maxHeartRate !== undefined && { maxHeartRate: maxHeartRate ? parseInt(maxHeartRate) : null }),
+        ...(restingHR !== undefined && { restingHR: restingHR ? parseInt(restingHR) : null }),
       },
       select: {
         id: true,

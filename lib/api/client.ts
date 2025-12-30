@@ -37,8 +37,10 @@ export interface Workout {
 
 export interface CompletedWorkout {
   id: string;
-  workoutId: string;
+  workoutId?: string;
   userId: string;
+  title?: string;
+  label?: string;
   completedAt: string;
   actualDuration?: number;
   actualDistance?: number;
@@ -48,6 +50,12 @@ export interface CompletedWorkout {
   feeling?: string;
   notes?: string;
   stravaId?: string;
+  stravaType?: string;
+  workoutStructure?: any;
+  classificationConfidence?: 'high' | 'medium' | 'low';
+  humanReadable?: string;
+  workout?: Workout;
+  user?: { id: string; name: string; email: string };
 }
 
 export interface Message {
@@ -71,6 +79,58 @@ export interface Stats {
   monthlyWorkouts: number;
   monthlyDistance: number;
   monthlyDuration: number;
+}
+
+export type BlockType = 'WARMUP' | 'RUN' | 'INTERVALS' | 'REST' | 'COOLDOWN';
+export type TargetType = 'HEART_RATE' | 'PACE' | 'OPEN';
+
+export interface TrainingBlock {
+  id?: string;
+  order: number;
+  type: BlockType;
+  durationSeconds?: number;
+  distanceMeters?: number;
+  // For intervals: repetition count and rest between reps
+  repetitions?: number;
+  restSeconds?: number;
+  // Pace targets (seconds per km)
+  paceMin?: number;
+  paceMax?: number;
+  // HR targets (bpm)
+  hrMin?: number;
+  hrMax?: number;
+  // Legacy target fields (for backwards compatibility)
+  targetType?: TargetType;
+  targetMin?: number;
+  targetMax?: number;
+  notes?: string;
+}
+
+export interface TrainingPlan {
+  id: string;
+  coachId: string;
+  athleteId: string;
+  date: string;
+  title: string;
+  description?: string;
+  blocks: TrainingBlock[];
+  athlete?: { id: string; name: string; email: string };
+  coach?: { id: string; name: string };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface StravaLap {
+  id: number;
+  name: string;
+  elapsed_time: number;
+  moving_time: number;
+  distance: number;
+  average_speed: number;
+  max_speed: number;
+  average_heartrate?: number;
+  max_heartrate?: number;
+  lap_index: number;
 }
 
 // API Error class
@@ -258,6 +318,43 @@ class ApiClient {
       }>(`/strava/import?weeks=${weeks}`, {
         method: 'POST',
       }),
+
+    getActivityLaps: (activityId: number) =>
+      this.request<{ laps: StravaLap[] }>(
+        `/strava/activities/${activityId}/laps`
+      ),
+  };
+
+  // Training Plans endpoints
+  trainingPlans = {
+    create: (plan: Omit<TrainingPlan, 'id' | 'coachId' | 'createdAt' | 'updatedAt'>) =>
+      this.request<TrainingPlan>('/training-plans', {
+        method: 'POST',
+        body: JSON.stringify(plan),
+      }),
+
+    getAll: (options?: { athleteId?: string; startDate?: string; endDate?: string }) => {
+      const params = new URLSearchParams();
+      if (options?.athleteId) params.append('athleteId', options.athleteId);
+      if (options?.startDate) params.append('startDate', options.startDate);
+      if (options?.endDate) params.append('endDate', options.endDate);
+      const query = params.toString();
+      return this.request<TrainingPlan[]>(`/training-plans${query ? `?${query}` : ''}`);
+    },
+
+    getById: (id: string) =>
+      this.request<TrainingPlan>(`/training-plans/${id}`),
+
+    update: (id: string, plan: Partial<Omit<TrainingPlan, 'id' | 'coachId'>>) =>
+      this.request<TrainingPlan>(`/training-plans/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(plan),
+      }),
+
+    delete: (id: string) =>
+      this.request<{ message: string }>(`/training-plans/${id}`, {
+        method: 'DELETE',
+      }),
   };
 
   // Stats endpoints
@@ -283,6 +380,25 @@ class ApiClient {
         recentWorkouts: Workout[];
         unreadMessages: number;
       }>('/stats/coach-dashboard'),
+
+    getAthleteWorkouts: (athleteId: string) =>
+      this.request<{ workouts: CompletedWorkout[] }>(
+        `/stats/athlete/${athleteId}/workouts`
+      ),
+
+    getActivities: (page = 1, limit = 20) =>
+      this.request<{
+        activities: CompletedWorkout[];
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          pages: number;
+        };
+      }>(`/stats/activities?page=${page}&limit=${limit}`),
+
+    getActivity: (id: string) =>
+      this.request<{ activity: CompletedWorkout }>(`/stats/activities/${id}`),
   };
 
   // Admin endpoints
@@ -328,6 +444,9 @@ class ApiClient {
       password: string;
       name: string;
       coachId?: string;
+      birthDate?: string;
+      maxHeartRate?: number;
+      restingHR?: number;
     }) =>
       this.request<{
         athlete: {
@@ -337,6 +456,9 @@ class ApiClient {
           role: string;
           createdAt: string;
           coachId?: string;
+          birthDate?: string;
+          maxHeartRate?: number;
+          restingHR?: number;
           coach?: { id: string; name: string; email: string };
         };
       }>('/admin/athletes', {
@@ -360,7 +482,13 @@ class ApiClient {
 
     updateUser: (
       id: string,
-      data: { name?: string; coachId?: string | null }
+      data: {
+        name?: string;
+        coachId?: string | null;
+        birthDate?: string;
+        maxHeartRate?: number;
+        restingHR?: number;
+      }
     ) =>
       this.request<{
         user: {

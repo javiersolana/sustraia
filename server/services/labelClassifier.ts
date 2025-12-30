@@ -11,6 +11,10 @@ export type WorkoutLabelType =
     | 'TEMPO'
     | 'RODAJE'
     | 'CUESTAS'
+    | 'RECUPERACION'
+    | 'PROGRESIVO'
+    | 'FARTLEK'
+    | 'COMPETICION'
     | 'OTRO';
 
 interface LabelRule {
@@ -89,6 +93,10 @@ export function getLabelDisplayName(label: WorkoutLabelType): string {
         TEMPO: 'Tempo',
         RODAJE: 'Rodaje',
         CUESTAS: 'Cuestas',
+        RECUPERACION: 'Recuperación',
+        PROGRESIVO: 'Progresivo',
+        FARTLEK: 'Fartlek',
+        COMPETICION: 'Competición',
         OTRO: 'Otro',
     };
     return displayNames[label];

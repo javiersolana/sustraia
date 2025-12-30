@@ -14,6 +14,7 @@ import {
 import { Role } from '../../lib/types/dashboard';
 import { motion } from 'framer-motion';
 import { api } from '../../lib/api/client';
+import { NavLink } from 'react-router-dom';
 
 interface SidebarProps {
   role: Role;
@@ -22,18 +23,19 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const menuItems = role === Role.ATHLETE
     ? [
-      { icon: House, label: 'Inicio', active: true },
-      { icon: Calendar, label: 'Entrenamientos', active: false },
-      { icon: TrendingUp, label: 'Progreso', active: false },
-      { icon: MessageSquare, label: 'Mensajes', active: false },
-      { icon: User, label: 'Perfil', active: false },
+      { icon: House, label: 'Inicio', href: '/dashboard/atleta' },
+      { icon: Calendar, label: 'Entrenamientos', href: '/dashboard/atleta' },
+      { icon: Activity, label: 'Actividades', href: '/dashboard/atleta/actividades' },
+      { icon: TrendingUp, label: 'Progreso', href: '/dashboard/atleta/progreso' },
+      { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/atleta' },
+      { icon: User, label: 'Perfil', href: '/dashboard/atleta' },
     ]
     : [
-      { icon: LayoutDashboard, label: 'Vista general', active: true },
-      { icon: Users, label: 'Mis atletas', active: false },
-      { icon: Calendar, label: 'Calendario', active: false },
-      { icon: MessageSquare, label: 'Mensajes', active: false },
-      { icon: BarChart3, label: 'Estadísticas', active: false },
+      { icon: LayoutDashboard, label: 'Vista general', href: '/dashboard/coach' },
+      { icon: Users, label: 'Mis atletas', href: '/dashboard/coach' },
+      { icon: Calendar, label: 'Calendario', href: '/dashboard/coach' },
+      { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/coach' },
+      { icon: BarChart3, label: 'Estadísticas', href: '/dashboard/coach' },
     ];
 
   const handleStravaConnect = async () => {
@@ -60,21 +62,27 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         {/* Navigation */}
         <nav className="space-y-2">
           {menuItems.map((item, index) => (
-            <motion.a
+            <NavLink
               key={index}
-              href="#"
-              whileHover={{ x: 4 }}
-              className={`
+              to={item.href}
+              className={({ isActive }) => `
                 flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200
-                ${item.active
+                ${isActive
                   ? 'bg-sustraia-accent text-white shadow-lg shadow-blue-500/20'
                   : 'text-sustraia-gray hover:bg-blue-50 hover:text-sustraia-accent'
                 }
               `}
             >
-              <item.icon size={22} className={item.active ? 'text-white' : ''} />
-              <span className="font-medium">{item.label}</span>
-            </motion.a>
+              {({ isActive }) => (
+                <motion.div
+                  whileHover={{ x: 4 }}
+                  className="flex items-center gap-4 w-full"
+                >
+                  <item.icon size={22} className={isActive ? 'text-white' : ''} />
+                  <span className="font-medium">{item.label}</span>
+                </motion.div>
+              )}
+            </NavLink>
           ))}
         </nav>
       </div>

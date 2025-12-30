@@ -22,12 +22,17 @@ export async function calculateStats(userId: string, date: Date = new Date()) {
     0
   );
 
-  // Weekly stats (last 7 days)
-  const weekAgo = new Date(date);
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  // Weekly stats (Monday-Sunday of current week)
+  const today = new Date(date);
+  const dayOfWeek = today.getDay();
+  // Get Monday of current week (if Sunday=0, go back 6 days; else go back dayOfWeek-1 days)
+  const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() + mondayOffset);
+  weekStart.setHours(0, 0, 0, 0);
 
   const weeklyWorkouts = completedWorkouts.filter(
-    (w) => new Date(w.completedAt) >= weekAgo
+    (w) => new Date(w.completedAt) >= weekStart
   );
   const weeklyDistance = weeklyWorkouts.reduce(
     (sum, w) => sum + (w.actualDistance || 0),
@@ -189,10 +194,16 @@ export async function getDashboard(req: Request, res: Response) {
       take: 5,
     });
 
-    // Get recent completed workouts
+    // Get recent completed workouts (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
     const recentCompleted = await prisma.completedWorkout.findMany({
       where: {
         userId: req.user.userId,
+        completedAt: {
+          gte: thirtyDaysAgo,
+        },
       },
       include: {
         workout: true,
@@ -200,7 +211,7 @@ export async function getDashboard(req: Request, res: Response) {
       orderBy: {
         completedAt: 'desc',
       },
-      take: 5,
+      take: 50,
     });
 
     // Get unread messages
@@ -309,5 +320,163 @@ export async function getCoachDashboard(req: Request, res: Response) {
   } catch (error) {
     console.error('Get coach dashboard error:', error);
     res.status(500).json({ error: 'Failed to fetch coach dashboard data' });
+  }
+}
+
+/**
+ * Get completed workouts for a specific athlete (coach only)
+ */
+export async function getAthleteWorkouts(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    if (req.user.role !== 'COACH') {
+      return res.status(403).json({ error: 'Only coaches can access this' });
+    }
+
+    const { athleteId } = req.params;
+
+    // Verify this athlete belongs to the coach
+    const athlete = await prisma.user.findFirst({
+      where: {
+        id: athleteId,
+        coachId: req.user.userId,
+      },
+    });
+
+    if (!athlete) {
+      return res.status(404).json({ error: 'Athlete not found' });
+    }
+
+    // Get completed workouts for the last 60 days
+    const sixtyDaysAgo = new Date();
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+    const completedWorkouts = await prisma.completedWorkout.findMany({
+      where: {
+        userId: athleteId,
+        completedAt: {
+          gte: sixtyDaysAgo,
+        },
+      },
+      include: {
+        workout: true,
+      },
+      orderBy: {
+        completedAt: 'desc',
+      },
+      take: 100,
+    });
+
+    res.json({ workouts: completedWorkouts });
+  } catch (error) {
+    console.error('Get athlete workouts error:', error);
+    res.status(500).json({ error: 'Failed to fetch athlete workouts' });
+  }
+}
+
+/**
+ * Get single completed workout/activity by ID
+ */
+export async function getActivity(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { id } = req.params;
+
+    const activity = await prisma.completedWorkout.findUnique({
+      where: { id },
+      include: {
+        workout: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!activity) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+
+    // Check permissions: user owns it OR user's coach
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { coachId: true, role: true },
+    });
+
+    const canAccess =
+      activity.userId === req.user.userId ||
+      (user?.role === 'COACH' && activity.user.id === req.user.userId) ||
+      (user?.coachId && activity.user.id === user.coachId);
+
+    if (!canAccess) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    res.json({ activity });
+  } catch (error) {
+    console.error('Get activity error:', error);
+    res.status(500).json({ error: 'Failed to fetch activity' });
+  }
+}
+
+/**
+ * Get all completed activities for authenticated user
+ */
+export async function getActivities(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
+    const skip = (page - 1) * limit;
+
+    const [activities, total] = await Promise.all([
+      prisma.completedWorkout.findMany({
+        where: {
+          userId: req.user.userId,
+        },
+        include: {
+          workout: {
+            select: {
+              id: true,
+              title: true,
+              type: true,
+            },
+          },
+        },
+        orderBy: {
+          completedAt: 'desc',
+        },
+        skip,
+        take: limit,
+      }),
+      prisma.completedWorkout.count({
+        where: { userId: req.user.userId },
+      }),
+    ]);
+
+    res.json({
+      activities,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error('Get activities error:', error);
+    res.status(500).json({ error: 'Failed to fetch activities' });
   }
 }
