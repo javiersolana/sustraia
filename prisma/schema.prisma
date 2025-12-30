@@ -9,43 +9,31 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      UserRole
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Perfil fisiológico
-  birthDate    DateTime?
-  maxHeartRate Int?
-  restingHR    Int?
-  weeklyGoalKm Float?
-
-  // Relaciones generales
-  workouts          Workout[]
+  id                String             @id @default(cuid())
+  email             String             @unique
+  password          String
+  name              String
+  role              UserRole
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  coachId           String?
+  weeklyGoalKm      Float?
+  birthDate         DateTime?
+  maxHeartRate      Int?
+  restingHR         Int?
+  athleteGoals      AthleteGoal[]      @relation("AthleteGoals")
+  coachGoals        AthleteGoal[]      @relation("CoachGoals")
+  athleteNotes      AthleteNote[]      @relation("AthleteNotes")
+  coachNotes        AthleteNote[]      @relation("CoachNotes")
   completedWorkouts CompletedWorkout[]
-  sentMessages      Message[] @relation("SentMessages")
-  receivedMessages  Message[] @relation("ReceivedMessages")
+  sentMessages      Message[]          @relation("SentMessages")
+  receivedMessages  Message[]          @relation("ReceivedMessages")
   stats             Stat[]
   stravaToken       StravaToken?
-
-  // Coach / Atleta
-  coachId  String?
-  coach    User?   @relation("CoachAthletes", fields: [coachId], references: [id])
-  athletes User[]  @relation("CoachAthletes")
-
-  // Asignaciones
-  assignedWorkouts Workout[] @relation("AssignedWorkouts")
-
-  // Notas
-  coachNotes   AthleteNote[] @relation("CoachNotes")
-  athleteNotes AthleteNote[] @relation("AthleteNotes")
-
-  // Objetivos
-  athleteGoals AthleteGoal[] @relation("AthleteGoals")
-  coachGoals   AthleteGoal[] @relation("CoachGoals")
+  coach             User?              @relation("CoachAthletes", fields: [coachId], references: [id])
+  athletes          User[]             @relation("CoachAthletes")
+  assignedWorkouts  Workout[]          @relation("AssignedWorkouts")
+  workouts          Workout[]
 
   @@index([email])
   @@index([role])
@@ -94,8 +82,6 @@ model CompletedWorkout {
   updatedAt      DateTime     @updatedAt
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout        Workout?     @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  workoutStructure Json?
-
 
   @@index([userId])
   @@index([completedAt])

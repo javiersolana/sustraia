@@ -258,3 +258,6 @@ ALTER TABLE "AthleteGoal" ADD CONSTRAINT "AthleteGoal_athleteId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "AthleteGoal" ADD CONSTRAINT "AthleteGoal_coachId_fkey" FOREIGN KEY ("coachId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "CompletedWorkout"
+ADD COLUMN IF NOT EXISTS "workoutStructure" JSONB;
