@@ -44,6 +44,14 @@ export const createPlan: RequestHandler = async (req, res, next) => {
             return;
         }
 
+        // 🔒 SAFE GUARD: TrainingPlan model does not exist yet in Prisma
+        if (!(prisma as any).trainingPlan) {
+            res.status(501).json({
+                error: 'Training plans feature not yet available. Use Workouts instead.'
+            });
+            return;
+        }
+
         // Verify athlete exists and belongs to this coach
         const athlete = await prisma.user.findFirst({
             where: {
@@ -59,7 +67,7 @@ export const createPlan: RequestHandler = async (req, res, next) => {
         }
 
         // Create plan with blocks in a transaction
-        const plan = await prisma.trainingPlan.create({
+        const plan = await (prisma as any).trainingPlan.create({
             data: {
                 coachId,
                 athleteId,
@@ -170,7 +178,13 @@ export const getPlanById: RequestHandler = async (req, res, next) => {
         const userId = req.user!.userId;
         const role = req.user!.role;
 
-        const plan = await prisma.trainingPlan.findUnique({
+        // 🔒 SAFE GUARD
+        if (!(prisma as any).trainingPlan) {
+            res.status(501).json({ error: 'Training plans not available' });
+            return;
+        }
+
+        const plan = await (prisma as any).trainingPlan.findUnique({
             where: { id },
             include: {
                 blocks: {
@@ -215,8 +229,14 @@ export const updatePlan: RequestHandler = async (req, res, next) => {
         const { date, title, description, blocks } = req.body;
         const coachId = req.user!.userId;
 
+        // 🔒 SAFE GUARD
+        if (!(prisma as any).trainingPlan) {
+            res.status(501).json({ error: 'Training plans not available' });
+            return;
+        }
+
         // Verify ownership
-        const existingPlan = await prisma.trainingPlan.findFirst({
+        const existingPlan = await (prisma as any).trainingPlan.findFirst({
             where: { id, coachId },
         });
 
@@ -228,12 +248,12 @@ export const updatePlan: RequestHandler = async (req, res, next) => {
         // Update plan and replace blocks
         const plan = await prisma.$transaction(async (tx) => {
             // Delete existing blocks
-            await tx.trainingBlock.deleteMany({
+            await (tx as any).trainingBlock.deleteMany({
                 where: { planId: id },
             });
 
             // Update plan and create new blocks
-            return tx.trainingPlan.update({
+            return (tx as any).trainingPlan.update({
                 where: { id },
                 data: {
                     date: date ? new Date(date) : undefined,
@@ -283,8 +303,14 @@ export const deletePlan: RequestHandler = async (req, res, next) => {
         const { id } = req.params;
         const coachId = req.user!.userId;
 
+        // 🔒 SAFE GUARD
+        if (!(prisma as any).trainingPlan) {
+            res.status(501).json({ error: 'Training plans not available' });
+            return;
+        }
+
         // Verify ownership
-        const existingPlan = await prisma.trainingPlan.findFirst({
+        const existingPlan = await (prisma as any).trainingPlan.findFirst({
             where: { id, coachId },
         });
 
@@ -293,7 +319,7 @@ export const deletePlan: RequestHandler = async (req, res, next) => {
             return;
         }
 
-        await prisma.trainingPlan.delete({
+        await (prisma as any).trainingPlan.delete({
             where: { id },
         });
 
