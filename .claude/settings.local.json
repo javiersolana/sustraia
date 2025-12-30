@@ -25,7 +25,11 @@
       "Bash(powershell -Command \"winget --version\")",
       "Bash(powershell -Command:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File scripts/install-postgres.ps1)",
-      "Bash(dir /s /b \"c:\\\\Users\\\\javie\\\\Desktop\\\\sustraia\\\\src\\\\*.tsx\")"
+      "Bash(dir /s /b \"c:\\\\Users\\\\javie\\\\Desktop\\\\sustraia\\\\src\\\\*.tsx\")",
+      "Bash(git push)",
+      "Bash(cat:*)",
+      "Bash(set \"DATABASE_URL=postgresql://postgres:HmllJ24yt22a.@db.ineieectzdczmggjrpey.supabase.co:5432/postgres\")",
+      "Bash($env:DATABASE_URL=\"postgresql://postgres:HmllJ24yt22a.@db.ineieectzdczmggjrpey.supabase.co:5432/postgres\")"
     ]
   }
 }
