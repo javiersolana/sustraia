@@ -17,7 +17,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Perfil fisiológico (Campos que faltaban)
+  // Perfil fisiológico
   birthDate    DateTime?
   maxHeartRate Int?
   restingHR    Int?
@@ -26,28 +26,26 @@ model User {
   // Relaciones generales
   workouts          Workout[]
   completedWorkouts CompletedWorkout[]
-  sentMessages      Message[]          @relation("SentMessages")
-  receivedMessages  Message[]          @relation("ReceivedMessages")
+  sentMessages      Message[] @relation("SentMessages")
+  receivedMessages  Message[] @relation("ReceivedMessages")
   stats             Stat[]
   stravaToken       StravaToken?
 
-  // Relaciones de Atleta
-  assignedWorkouts  Workout[]       @relation("AssignedWorkouts")
-  coach             User?           @relation("CoachAthletes", fields: [coachId], references: [id])
-  coachId           String?
-  assignedPlans     TrainingPlan[]  @relation("AthletePlans")
+  // Coach / Atleta
+  coachId  String?
+  coach    User?   @relation("CoachAthletes", fields: [coachId], references: [id])
+  athletes User[]  @relation("CoachAthletes")
 
-  // Relaciones de Coach
-  athletes     User[]          @relation("CoachAthletes")
-  createdPlans TrainingPlan[]  @relation("CoachPlans")
+  // Asignaciones
+  assignedWorkouts Workout[] @relation("AssignedWorkouts")
 
   // Notas
-  coachNotes   AthleteNote[]   @relation("CoachNotes")
-  athleteNotes AthleteNote[]   @relation("AthleteNotes")
+  coachNotes   AthleteNote[] @relation("CoachNotes")
+  athleteNotes AthleteNote[] @relation("AthleteNotes")
 
   // Objetivos
-  athleteGoals AthleteGoal[]   @relation("AthleteGoals")
-  coachGoals   AthleteGoal[]   @relation("CoachGoals")
+  athleteGoals AthleteGoal[] @relation("AthleteGoals")
+  coachGoals   AthleteGoal[] @relation("CoachGoals")
 
   @@index([email])
   @@index([role])
