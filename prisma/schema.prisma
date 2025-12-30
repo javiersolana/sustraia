@@ -22,6 +22,7 @@ model User {
   maxHeartRate Int?
   restingHR    Int?
   weeklyGoalKm Float?
+  workoutStructure       Json? 
 
   // Relaciones generales
   workouts          Workout[]
