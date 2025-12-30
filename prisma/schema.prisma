@@ -67,6 +67,7 @@ model User {
   birthDate    DateTime?  // For calculating age and FCmax
   maxHeartRate Int?       // Manual FCmax if known
   restingHR    Int?       // Resting HR for Karvonen formula
+  weeklyGoalKm Float?     // Weekly distance goal in kilometers (default 20)
 
   // Relations
   workouts          Workout[]
@@ -85,6 +86,14 @@ model User {
   // Coach-specific relations
   athletes     User[]          @relation("CoachAthletes")
   createdPlans TrainingPlan[]  @relation("CoachPlans")
+
+  // Notes relations (coach can write notes about athletes)
+  coachNotes   AthleteNote[]   @relation("CoachNotes")
+  athleteNotes AthleteNote[]   @relation("AthleteNotes")
+
+  // Goals relations (races, objectives)
+  athleteGoals AthleteGoal[]   @relation("AthleteGoals")
+  coachGoals   AthleteGoal[]   @relation("CoachGoals")
 
   @@index([email])
   @@index([role])
@@ -256,4 +265,44 @@ model TrainingBlock {
 
   @@index([planId])
   @@index([order])
+}
+
+// Coach notes for athletes
+model AthleteNote {
+  id        String   @id @default(cuid())
+  coachId   String
+  athleteId String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  coach   User @relation("CoachNotes", fields: [coachId], references: [id], onDelete: Cascade)
+  athlete User @relation("AthleteNotes", fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([coachId])
+  @@index([athleteId])
+  @@index([createdAt])
+}
+
+// Race/Goal for athlete calendar
+model AthleteGoal {
+  id          String   @id @default(cuid())
+  athleteId   String
+  coachId     String?  // null if created by athlete
+  date        DateTime
+  name        String
+  distance    Float?   // in km
+  description String?
+  type        String   @default("race") // race, time_goal, other
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  athlete User  @relation("AthleteGoals", fields: [athleteId], references: [id], onDelete: Cascade)
+  coach   User? @relation("CoachGoals", fields: [coachId], references: [id], onDelete: SetNull)
+
+  @@index([athleteId])
+  @@index([coachId])
+  @@index([date])
 }

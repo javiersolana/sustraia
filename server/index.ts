@@ -11,6 +11,9 @@ import stravaRoutes from './routes/stravaRoutes';
 import statsRoutes from './routes/statsRoutes';
 import adminRoutes from './routes/adminRoutes';
 import trainingPlanRoutes from './routes/trainingPlanRoutes';
+import setupRoutes from './routes/setupRoutes';
+import userRoutes from './routes/userRoutes';
+import notesRoutes from './routes/notesRoutes';
 
 // Validate environment variables
 try {
@@ -51,6 +54,8 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/setup', setupRoutes); // Temporary setup routes
+app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/messages', messageRoutes);
@@ -58,6 +63,7 @@ app.use('/api/strava', stravaRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/training-plans', trainingPlanRoutes);
+app.use('/api', notesRoutes);
 
 // Error handling
 app.use(notFound);

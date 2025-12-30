@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
   const menuItems = role === Role.ATHLETE
     ? [
       { icon: House, label: 'Inicio', href: '/dashboard/atleta' },
-      { icon: Calendar, label: 'Entrenamientos', href: '/dashboard/atleta' },
+      { icon: Calendar, label: 'Entrenamientos', href: '/dashboard/atleta/calendario' },
       { icon: Activity, label: 'Actividades', href: '/dashboard/atleta/actividades' },
       { icon: TrendingUp, label: 'Progreso', href: '/dashboard/atleta/progreso' },
       { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/atleta' },
@@ -32,8 +32,8 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     ]
     : [
       { icon: LayoutDashboard, label: 'Vista general', href: '/dashboard/coach' },
-      { icon: Users, label: 'Mis atletas', href: '/dashboard/coach' },
-      { icon: Calendar, label: 'Calendario', href: '/dashboard/coach' },
+      { icon: Users, label: 'Mis atletas', href: '/dashboard/coach/atletas' },
+      { icon: Calendar, label: 'Calendario', href: '/dashboard/coach/calendario' },
       { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/coach' },
       { icon: BarChart3, label: 'Estadísticas', href: '/dashboard/coach' },
     ];
@@ -60,26 +60,23 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
         </div>
 
         {/* Navigation */}
-        <nav className="space-y-2">
+        <nav className="space-y-1">
           {menuItems.map((item, index) => (
             <NavLink
               key={index}
               to={item.href}
-              className={({ isActive }) => `
-                flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200
-                ${isActive
-                  ? 'bg-sustraia-accent text-white shadow-lg shadow-blue-500/20'
-                  : 'text-sustraia-gray hover:bg-blue-50 hover:text-sustraia-accent'
-                }
-              `}
+              end={item.href === '/dashboard/atleta' || item.href === '/dashboard/coach'}
+              className="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sustraia-text bg-transparent transition-all duration-300"
             >
-              {({ isActive }) => (
+              {() => (
                 <motion.div
-                  whileHover={{ x: 4 }}
-                  className="flex items-center gap-4 w-full"
+                  whileHover={{ x: 6, backgroundColor: 'rgba(0, 0, 0, 0.03)' }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  className="flex items-center gap-4 w-full px-2 py-1 -mx-2 rounded-xl"
                 >
-                  <item.icon size={22} className={isActive ? 'text-white' : ''} />
-                  <span className="font-medium">{item.label}</span>
+                  <item.icon size={22} className="text-sustraia-gray" />
+                  <span className="font-medium text-sustraia-text">{item.label}</span>
                 </motion.div>
               )}
             </NavLink>

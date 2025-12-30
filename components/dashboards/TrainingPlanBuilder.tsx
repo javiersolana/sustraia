@@ -337,23 +337,101 @@ interface BlockEditorProps {
     onRemove: () => void;
 }
 
+type DurationUnit = 'minutes' | 'km';
+type RestUnit = 'seconds' | 'meters';
+
 function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
     const blockType = BLOCK_TYPES.find(t => t.type === block.type)!;
     const isIntervals = block.type === 'INTERVALS';
 
-    // Parse pace from seconds to mm:ss display
-    const formatPace = (seconds: number) => {
+    // State for unit selection
+    const [durationUnit, setDurationUnit] = React.useState<DurationUnit>(
+        block.distanceMeters && !block.durationSeconds ? 'km' : 'minutes'
+    );
+    const [restUnit, setRestUnit] = React.useState<RestUnit>(
+        (block as any).restMeters ? 'meters' : 'seconds'
+    );
+
+    // State for pace inputs (to allow free typing)
+    const [paceMinStr, setPaceMinStr] = React.useState(
+        block.paceMin ? formatPaceDisplay(block.paceMin) : ''
+    );
+    const [paceMaxStr, setPaceMaxStr] = React.useState(
+        block.paceMax ? formatPaceDisplay(block.paceMax) : ''
+    );
+    const [recoveryPaceStr, setRecoveryPaceStr] = React.useState('');
+
+    // Format pace from seconds to mm:ss display
+    function formatPaceDisplay(seconds: number): string {
         const mins = Math.floor(seconds / 60);
         const secs = Math.round(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
+    }
 
-    const parsePace = (str: string): number => {
+    // Parse pace string to seconds
+    function parsePaceToSeconds(str: string): number | undefined {
+        if (!str || str.trim() === '') return undefined;
         const parts = str.split(':');
         if (parts.length === 2) {
-            return parseInt(parts[0]) * 60 + parseInt(parts[1] || '0');
+            const mins = parseInt(parts[0]) || 0;
+            const secs = parseInt(parts[1]) || 0;
+            return mins * 60 + secs;
         }
-        return 0;
+        // Allow single number as minutes
+        const mins = parseInt(str);
+        if (!isNaN(mins)) {
+            return mins * 60;
+        }
+        return undefined;
+    }
+
+    // Handle pace blur to validate and update
+    const handlePaceMinBlur = () => {
+        const seconds = parsePaceToSeconds(paceMinStr);
+        onUpdate({ paceMin: seconds });
+        if (seconds) {
+            setPaceMinStr(formatPaceDisplay(seconds));
+        }
+    };
+
+    const handlePaceMaxBlur = () => {
+        const seconds = parsePaceToSeconds(paceMaxStr);
+        onUpdate({ paceMax: seconds });
+        if (seconds) {
+            setPaceMaxStr(formatPaceDisplay(seconds));
+        }
+    };
+
+    // Get current duration value for display
+    const getDurationValue = (): string => {
+        if (durationUnit === 'km' && block.distanceMeters) {
+            return (block.distanceMeters / 1000).toFixed(1);
+        }
+        if (durationUnit === 'minutes' && block.durationSeconds) {
+            return Math.round(block.durationSeconds / 60).toString();
+        }
+        return '';
+    };
+
+    // Handle duration change
+    const handleDurationChange = (value: string) => {
+        const num = parseFloat(value) || 0;
+        if (durationUnit === 'km') {
+            onUpdate({ distanceMeters: Math.round(num * 1000), durationSeconds: undefined });
+        } else {
+            onUpdate({ durationSeconds: Math.round(num * 60), distanceMeters: undefined });
+        }
+    };
+
+    // Handle unit switch
+    const handleUnitSwitch = (newUnit: DurationUnit) => {
+        setDurationUnit(newUnit);
+        // Reset values when switching
+        if (newUnit === 'km') {
+            onUpdate({ distanceMeters: 5000, durationSeconds: undefined });
+        } else {
+            onUpdate({ durationSeconds: 600, distanceMeters: undefined });
+        }
     };
 
     return (
@@ -384,87 +462,246 @@ function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                         </button>
                     </div>
 
-                    {/* Intervals-specific: repetitions */}
+                    {/* Intervals: Repetitions header prominently displayed */}
                     {isIntervals && (
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs text-gray-500 w-16">Series:</label>
-                            <input
-                                type="number"
-                                min="1"
-                                max="100"
-                                value={block.repetitions || 10}
-                                onChange={e => onUpdate({ repetitions: parseInt(e.target.value) || 1 })}
-                                className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
-                            />
-                            <span className="text-xs text-gray-500">x</span>
+                        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="font-bold text-sustraia-accent text-lg">
+                                    {block.repetitions || 10} x
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => onUpdate({ repetitions: Math.max(1, (block.repetitions || 10) - 1) })}
+                                        className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100"
+                                    >
+                                        -
+                                    </button>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="100"
+                                        value={block.repetitions || 10}
+                                        onChange={e => onUpdate({ repetitions: parseInt(e.target.value) || 1 })}
+                                        className="w-14 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm font-bold"
+                                    />
+                                    <button
+                                        onClick={() => onUpdate({ repetitions: (block.repetitions || 10) + 1 })}
+                                        className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100"
+                                    >
+                                        +
+                                    </button>
+                                    <span className="text-xs text-gray-500 ml-1">repeticiones</span>
+                                </div>
+                            </div>
                         </div>
                     )}
 
-                    {/* Distance/Duration */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {isIntervals ? (
-                            <>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    step="100"
-                                    value={block.distanceMeters || 400}
-                                    onChange={e => onUpdate({ distanceMeters: parseInt(e.target.value) || 0, durationSeconds: undefined })}
-                                    className="w-20 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
-                                />
-                                <span className="text-xs text-gray-500">metros</span>
-                            </>
-                        ) : (
-                            <>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    max="180"
-                                    value={Math.round((block.durationSeconds || 0) / 60)}
-                                    onChange={e => onUpdate({ durationSeconds: parseInt(e.target.value || '0') * 60, distanceMeters: undefined })}
-                                    className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
-                                />
-                                <span className="text-xs text-gray-500">min</span>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Intervals-specific: rest */}
-                    {isIntervals && (
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs text-gray-500 w-16">Recup:</label>
+                    {/* Duration/Distance with unit selector */}
+                    {!isIntervals && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <label className="text-xs text-gray-500 w-16">Duración:</label>
                             <input
                                 type="number"
                                 min="0"
-                                max="600"
-                                value={block.restSeconds || 60}
-                                onChange={e => onUpdate({ restSeconds: parseInt(e.target.value) || 0 })}
-                                className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                                step={durationUnit === 'km' ? '0.1' : '1'}
+                                value={getDurationValue()}
+                                onChange={e => handleDurationChange(e.target.value)}
+                                className="w-20 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
                             />
-                            <span className="text-xs text-gray-500">seg</span>
+                            <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                                <button
+                                    onClick={() => handleUnitSwitch('minutes')}
+                                    className={`px-3 py-1 text-xs font-medium transition-colors ${
+                                        durationUnit === 'minutes'
+                                            ? 'bg-sustraia-accent text-white'
+                                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    min
+                                </button>
+                                <button
+                                    onClick={() => handleUnitSwitch('km')}
+                                    className={`px-3 py-1 text-xs font-medium transition-colors ${
+                                        durationUnit === 'km'
+                                            ? 'bg-sustraia-accent text-white'
+                                            : 'bg-white text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    km
+                                </button>
+                            </div>
                         </div>
                     )}
 
-                    {/* Pace target (all blocks) */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <label className="text-xs text-gray-500 w-16">Ritmo:</label>
-                        <input
-                            type="text"
-                            placeholder="4:30"
-                            value={block.paceMin ? formatPace(block.paceMin) : ''}
-                            onChange={e => onUpdate({ paceMin: parsePace(e.target.value) })}
-                            className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
-                        />
-                        <span className="text-xs text-gray-500">-</span>
-                        <input
-                            type="text"
-                            placeholder="5:00"
-                            value={block.paceMax ? formatPace(block.paceMax) : ''}
-                            onChange={e => onUpdate({ paceMax: parsePace(e.target.value) })}
-                            className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
-                        />
-                        <span className="text-xs text-gray-500">/km</span>
-                    </div>
+                    {/* Intervals: Serie distance/duration */}
+                    {isIntervals && (
+                        <div className="space-y-3 pl-2 border-l-2 border-red-200">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <label className="text-xs text-gray-600 font-medium w-16">Serie:</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step={durationUnit === 'km' ? '0.1' : '100'}
+                                    value={durationUnit === 'km'
+                                        ? ((block.distanceMeters || 1000) / 1000).toFixed(1)
+                                        : block.distanceMeters || 400
+                                    }
+                                    onChange={e => {
+                                        const val = parseFloat(e.target.value) || 0;
+                                        if (durationUnit === 'km') {
+                                            onUpdate({ distanceMeters: Math.round(val * 1000), durationSeconds: undefined });
+                                        } else {
+                                            onUpdate({ distanceMeters: Math.round(val), durationSeconds: undefined });
+                                        }
+                                    }}
+                                    className="w-20 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                                />
+                                <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                                    <button
+                                        onClick={() => {
+                                            setDurationUnit('minutes');
+                                            onUpdate({ distanceMeters: 400, durationSeconds: undefined });
+                                        }}
+                                        className={`px-2 py-1 text-xs font-medium transition-colors ${
+                                            durationUnit === 'minutes'
+                                                ? 'bg-sustraia-accent text-white'
+                                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        m
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setDurationUnit('km');
+                                            onUpdate({ distanceMeters: 1000, durationSeconds: undefined });
+                                        }}
+                                        className={`px-2 py-1 text-xs font-medium transition-colors ${
+                                            durationUnit === 'km'
+                                                ? 'bg-sustraia-accent text-white'
+                                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        km
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Serie pace */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <label className="text-xs text-gray-600 w-16">Ritmo:</label>
+                                <input
+                                    type="text"
+                                    placeholder="4:00"
+                                    value={paceMinStr}
+                                    onChange={e => setPaceMinStr(e.target.value)}
+                                    onBlur={handlePaceMinBlur}
+                                    className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                                />
+                                <span className="text-xs text-gray-400">-</span>
+                                <input
+                                    type="text"
+                                    placeholder="4:30"
+                                    value={paceMaxStr}
+                                    onChange={e => setPaceMaxStr(e.target.value)}
+                                    onBlur={handlePaceMaxBlur}
+                                    className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                                />
+                                <span className="text-xs text-gray-500">/km</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Intervals: Recovery section */}
+                    {isIntervals && (
+                        <div className="space-y-3 pl-2 border-l-2 border-gray-200">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <label className="text-xs text-gray-600 font-medium w-16">Recup:</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={restUnit === 'seconds'
+                                        ? (block.restSeconds || 60)
+                                        : ((block as any).restMeters || 200)
+                                    }
+                                    onChange={e => {
+                                        const val = parseInt(e.target.value) || 0;
+                                        if (restUnit === 'seconds') {
+                                            onUpdate({ restSeconds: val });
+                                        } else {
+                                            onUpdate({ restSeconds: undefined, ...(({ restMeters: val } as any)) });
+                                        }
+                                    }}
+                                    className="w-20 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                                />
+                                <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+                                    <button
+                                        onClick={() => {
+                                            setRestUnit('seconds');
+                                            onUpdate({ restSeconds: 60 });
+                                        }}
+                                        className={`px-2 py-1 text-xs font-medium transition-colors ${
+                                            restUnit === 'seconds'
+                                                ? 'bg-sustraia-accent text-white'
+                                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        seg
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setRestUnit('meters');
+                                            onUpdate({ restSeconds: undefined });
+                                        }}
+                                        className={`px-2 py-1 text-xs font-medium transition-colors ${
+                                            restUnit === 'meters'
+                                                ? 'bg-sustraia-accent text-white'
+                                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        m
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Recovery pace (optional) */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <label className="text-xs text-gray-500 w-16">Ritmo:</label>
+                                <input
+                                    type="text"
+                                    placeholder="Trote"
+                                    value={recoveryPaceStr}
+                                    onChange={e => setRecoveryPaceStr(e.target.value)}
+                                    className="w-20 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm text-gray-500"
+                                />
+                                <span className="text-xs text-gray-400">(opcional)</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Pace target for non-interval blocks */}
+                    {!isIntervals && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <label className="text-xs text-gray-500 w-16">Ritmo:</label>
+                            <input
+                                type="text"
+                                placeholder="5:00"
+                                value={paceMinStr}
+                                onChange={e => setPaceMinStr(e.target.value)}
+                                onBlur={handlePaceMinBlur}
+                                className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                            />
+                            <span className="text-xs text-gray-400">-</span>
+                            <input
+                                type="text"
+                                placeholder="5:30"
+                                value={paceMaxStr}
+                                onChange={e => setPaceMaxStr(e.target.value)}
+                                onBlur={handlePaceMaxBlur}
+                                className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
+                            />
+                            <span className="text-xs text-gray-500">/km</span>
+                        </div>
+                    )}
 
                     {/* HR target (all blocks) */}
                     <div className="flex items-center gap-2 flex-wrap">
@@ -478,7 +715,7 @@ function BlockEditor({ block, onUpdate, onRemove }: BlockEditorProps) {
                             onChange={e => onUpdate({ hrMin: parseInt(e.target.value) || undefined })}
                             className="w-16 px-2 py-1 text-center border border-gray-200 rounded-lg text-sm"
                         />
-                        <span className="text-xs text-gray-500">-</span>
+                        <span className="text-xs text-gray-400">-</span>
                         <input
                             type="number"
                             placeholder="160"

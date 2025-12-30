@@ -14,9 +14,10 @@ export interface SidebarItem {
 export interface WeeklyActivity {
   day: string;
   date: string;
-  type?: 'RUN' | 'STRENGTH' | 'REST';
-  status: 'COMPLETED' | 'PENDING' | 'MISSED';
+  type?: 'RUN' | 'STRENGTH' | 'REST' | 'INTERVALS' | string;
+  status: 'COMPLETED' | 'PENDING' | 'MISSED' | 'REST';
   isToday?: boolean;
+  title?: string;
 }
 
 export interface AthleteRow {

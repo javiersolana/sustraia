@@ -16,7 +16,10 @@ import {
     Calendar as CalendarIcon,
     Activity,
     X,
-    TrendingUp
+    TrendingUp,
+    StickyNote,
+    Send,
+    Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -58,6 +61,11 @@ export default function AthleteDetailView() {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [editingPlan, setEditingPlan] = useState<TrainingPlan | null>(null);
+
+    // Notes state
+    const [notes, setNotes] = useState<Array<{ id: string; content: string; createdAt: string }>>([]);
+    const [newNote, setNewNote] = useState('');
+    const [loadingNotes, setLoadingNotes] = useState(false);
 
     // Calculate weekly km breakdown for current month
     const weeklyStats = useMemo((): WeeklyStats[] => {
@@ -142,6 +150,14 @@ export default function AthleteDetailView() {
                 }
 
                 setError(null);
+
+                // Fetch notes for this athlete
+                try {
+                    const notesData = await api.notes.getAthleteNotes(athleteId);
+                    setNotes(notesData.notes);
+                } catch (err) {
+                    console.log('Could not fetch notes:', err);
+                }
             } catch (err: any) {
                 console.error('Error fetching athlete data:', err);
                 setError(err.message || 'Error al cargar datos del atleta');
@@ -152,6 +168,32 @@ export default function AthleteDetailView() {
 
         fetchData();
     }, [athleteId]);
+
+    // Add a new note
+    const handleAddNote = async () => {
+        if (!newNote.trim() || !athleteId) return;
+
+        try {
+            setLoadingNotes(true);
+            const result = await api.notes.addAthleteNote(athleteId, newNote);
+            setNotes(prev => [result.note, ...prev]);
+            setNewNote('');
+        } catch (err) {
+            console.error('Error adding note:', err);
+        } finally {
+            setLoadingNotes(false);
+        }
+    };
+
+    // Delete a note
+    const handleDeleteNote = async (noteId: string) => {
+        try {
+            await api.notes.deleteNote(noteId);
+            setNotes(prev => prev.filter(n => n.id !== noteId));
+        } catch (err) {
+            console.error('Error deleting note:', err);
+        }
+    };
 
     // Convert data to calendar events
     const calendarEvents: CalendarEvent[] = [
@@ -287,7 +329,7 @@ export default function AthleteDetailView() {
                 </header>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                     <Card delay={0} className="text-center">
                         <Activity className="w-8 h-8 text-sustraia-accent mx-auto mb-2" />
                         <span className="font-display font-bold text-2xl block">
@@ -301,6 +343,59 @@ export default function AthleteDetailView() {
                             {((athlete.stats.weeklyDistance || 0) / 1000).toFixed(1)}
                         </span>
                         <span className="text-xs text-sustraia-gray">Km/semana</span>
+                    </Card>
+
+                    {/* Notes Section */}
+                    <Card delay={2} className="md:col-span-2">
+                        <div className="flex items-center gap-2 mb-3">
+                            <StickyNote className="w-5 h-5 text-yellow-500" />
+                            <h3 className="font-display font-bold text-sm">Notas del atleta</h3>
+                        </div>
+
+                        {/* Add note input */}
+                        <div className="flex gap-2 mb-3">
+                            <input
+                                type="text"
+                                value={newNote}
+                                onChange={(e) => setNewNote(e.target.value)}
+                                placeholder="Ej: Trabaja por la noche, cuidado fatiga..."
+                                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-xl focus:ring-2 focus:ring-sustraia-accent focus:border-transparent outline-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') handleAddNote();
+                                }}
+                            />
+                            <button
+                                onClick={handleAddNote}
+                                disabled={loadingNotes || !newNote.trim()}
+                                className="p-2 bg-sustraia-accent text-white rounded-xl hover:bg-sustraia-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <Send size={16} />
+                            </button>
+                        </div>
+
+                        {/* Notes list */}
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                            {notes.length > 0 ? (
+                                notes.slice(0, 5).map((note) => (
+                                    <div
+                                        key={note.id}
+                                        className="flex items-start gap-2 p-2 bg-yellow-50 rounded-lg text-sm group"
+                                    >
+                                        <span className="flex-1 text-gray-700">{note.content}</span>
+                                        <button
+                                            onClick={() => handleDeleteNote(note.id)}
+                                            className="p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-xs text-gray-400 text-center py-2">
+                                    Sin notas. Añade observaciones sobre el atleta.
+                                </p>
+                            )}
+                        </div>
                     </Card>
                 </div>
 

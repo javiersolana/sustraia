@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/prisma';
+import { UserRole } from '@prisma/client';
 import { hashPassword } from '../utils/password';
+import { getDetailedActivity } from '../services/stravaService';
+import { classifyWorkout, WorkoutType, ClassificationContext } from '../services/workoutClassifier';
+import { calculateHRZones } from '../services/hrZonesService';
+import { getAthleteHistoricalStats } from '../services/athleteHistoryService';
 
 /**
  * Admin middleware - check if user is admin
@@ -144,7 +149,7 @@ export async function createAthlete(req: Request, res: Response) {
         email,
         password: hashedPassword,
         name,
-        role: 'ATLETA',
+        role: UserRole.ATLETA,
         coachId: coachId || null,
         birthDate: birthDate ? new Date(birthDate) : null,
         maxHeartRate: maxHeartRate ? parseInt(maxHeartRate) : null,
@@ -213,7 +218,7 @@ export async function createCoach(req: Request, res: Response) {
         email,
         password: hashedPassword,
         name,
-        role: 'COACH',
+        role: UserRole.COACH,
       },
       select: {
         id: true,
@@ -360,5 +365,174 @@ export async function getAdminStats(req: Request, res: Response) {
   } catch (error) {
     console.error('Get admin stats error:', error);
     res.status(500).json({ error: 'Failed to fetch admin stats' });
+  }
+}
+
+/**
+ * Map WorkoutType from classifier to WorkoutLabel enum
+ */
+function mapWorkoutTypeToLabel(workoutType: WorkoutType) {
+  const mapping: Record<WorkoutType, string> = {
+    SERIES: 'SERIES',
+    TEMPO: 'TEMPO',
+    RODAJE: 'RODAJE',
+    CUESTAS: 'CUESTAS',
+    RECUPERACION: 'RECUPERACION',
+    PROGRESIVO: 'PROGRESIVO',
+    FARTLEK: 'FARTLEK',
+    COMPETICION: 'COMPETICION',
+    OTRO: 'OTRO'
+  };
+  return mapping[workoutType] || 'OTRO';
+}
+
+/**
+ * Reclassify all workouts for a specific athlete (admin only)
+ */
+export async function reclassifyAthleteWorkouts(req: Request, res: Response) {
+  try {
+    const { athleteId } = req.params;
+    const forceAll = req.query.force === 'true';
+
+    // Verify athlete exists
+    const athlete = await prisma.user.findUnique({
+      where: { id: athleteId },
+      select: { id: true, name: true, birthDate: true, maxHeartRate: true, restingHR: true },
+    });
+
+    if (!athlete) {
+      return res.status(404).json({ error: 'Athlete not found' });
+    }
+
+    // Check if athlete has Strava connected
+    const stravaToken = await prisma.stravaToken.findUnique({
+      where: { userId: athleteId },
+    });
+
+    if (!stravaToken) {
+      return res.status(400).json({ error: 'Athlete does not have Strava connected' });
+    }
+
+    console.log(`🔄 Admin reclassification for athlete ${athlete.name} (${athleteId}) (force: ${forceAll})`);
+
+    // Find workouts to reclassify
+    const whereClause = forceAll
+      ? { userId: athleteId, stravaId: { not: null } }
+      : {
+          userId: athleteId,
+          stravaId: { not: null },
+          OR: [
+            { workoutStructure: null },
+            { humanReadable: null },
+            { classificationConfidence: null }
+          ]
+        };
+
+    const workouts = await prisma.completedWorkout.findMany({
+      where: whereClause,
+      orderBy: { completedAt: 'desc' }
+    });
+
+    console.log(`📋 Found ${workouts.length} workouts to reclassify`);
+
+    if (workouts.length === 0) {
+      return res.json({
+        success: true,
+        athleteId,
+        athleteName: athlete.name,
+        reclassified: 0,
+        failed: 0,
+        message: 'All workouts are already classified'
+      });
+    }
+
+    let success = 0;
+    let failed = 0;
+    const results: any[] = [];
+
+    // Build classification context
+    let classificationContext: ClassificationContext | undefined;
+    const hrZones = calculateHRZones(athlete.birthDate, athlete.maxHeartRate, athlete.restingHR);
+    const historyStats = await getAthleteHistoricalStats(athleteId);
+    classificationContext = {
+      hrZones,
+      athleteStats: historyStats || undefined
+    };
+
+    for (const workout of workouts) {
+      try {
+        if (!workout.stravaId) {
+          failed++;
+          continue;
+        }
+
+        console.log(`🔍 Reclassifying: ${workout.title}`);
+
+        // Get detailed activity from Strava
+        const detailedActivity = await getDetailedActivity(athleteId, parseInt(workout.stravaId));
+
+        // Classify with context
+        const classification = classifyWorkout(detailedActivity, classificationContext);
+        const label = mapWorkoutTypeToLabel(classification.workout_type);
+
+        console.log(`   ✅ Classified as: ${classification.workout_type} (${classification.confidence})`);
+
+        // Build complete structure
+        const completeStructure = {
+          classification: classification.structure,
+          rawData: {
+            splits: detailedActivity.splits_metric,
+            laps: detailedActivity.laps,
+            elevation: detailedActivity.total_elevation_gain
+          }
+        };
+
+        // Update in database
+        await prisma.completedWorkout.update({
+          where: { id: workout.id },
+          data: {
+            label: label as any,
+            workoutStructure: completeStructure as any,
+            humanReadable: classification.human_readable,
+            classificationConfidence: classification.confidence
+          }
+        });
+
+        success++;
+        results.push({
+          id: workout.id,
+          title: workout.title,
+          type: classification.workout_type,
+          description: classification.human_readable,
+          confidence: classification.confidence
+        });
+
+        // Small delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+      } catch (error: any) {
+        console.error(`   ❌ Error: ${error.message}`);
+        failed++;
+      }
+    }
+
+    console.log(`✅ Reclassification complete for ${athlete.name}: ${success} success, ${failed} failed`);
+
+    res.json({
+      success: true,
+      athleteId,
+      athleteName: athlete.name,
+      reclassified: success,
+      failed,
+      total: workouts.length,
+      results
+    });
+
+  } catch (error: any) {
+    console.error('Reclassify athlete workouts error:', error);
+    res.status(500).json({
+      error: 'Failed to reclassify workouts',
+      details: error?.message
+    });
   }
 }

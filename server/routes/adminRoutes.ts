@@ -11,6 +11,7 @@ import {
   updateUserValidation,
   deleteUser,
   getAdminStats,
+  reclassifyAthleteWorkouts,
 } from '../controllers/adminController';
 import { authenticate } from '../middleware/auth';
 
@@ -30,5 +31,8 @@ router.post('/athletes', createAthleteValidation, createAthlete);
 router.post('/coaches', createCoachValidation, createCoach);
 router.put('/users/:id', updateUserValidation, updateUser);
 router.delete('/users/:id', deleteUser);
+
+// Athlete workout management
+router.post('/athletes/:athleteId/reclassify', reclassifyAthleteWorkouts);
 
 export default router;

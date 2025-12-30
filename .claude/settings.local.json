@@ -10,7 +10,22 @@
       "Bash(npm run typecheck:*)",
       "Bash(npx prisma migrate dev:*)",
       "Bash(npx prisma:*)",
-      "Bash(curl -s \"https://developers.strava.com/docs/reference/\")"
+      "Bash(curl -s \"https://developers.strava.com/docs/reference/\")",
+      "Bash(npm run server:*)",
+      "Bash(copy .env.example .env)",
+      "Bash(cmd /c copy .env.example .env)",
+      "Bash(pg_isready:*)",
+      "Bash(tsx scripts/create-admin.ts:*)",
+      "Bash(npx tsx scripts/create-admin.ts)",
+      "Bash(psql:*)",
+      "Bash(cmd /c \"where psql\")",
+      "Bash(cmd /c 'dir \"\"C:\\\\Program Files\\\\PostgreSQL\"\" 2>nul || echo \"\"No encontrado en Program Files\"\"')",
+      "Bash(cmd /c 'sc query postgresql-x64-16 2>nul || sc query postgresql-x64-15 2>nul || sc query postgresql-x64-14 2>nul || echo \"\"Servicio PostgreSQL no encontrado\"\"')",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command \"winget --version\")",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File scripts/install-postgres.ps1)",
+      "Bash(dir /s /b \"c:\\\\Users\\\\javie\\\\Desktop\\\\sustraia\\\\src\\\\*.tsx\")"
     ]
   }
 }

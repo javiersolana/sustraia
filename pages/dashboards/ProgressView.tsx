@@ -78,8 +78,32 @@ function StatusIcon({ diff }: { diff: number }) {
     return <Minus size={16} className="text-gray-400" />;
 }
 
-// Helper: Normalize workout title for grouping
-function normalizeTitle(title: string): string {
+// Helper: Get display name for workout labels
+function getLabelDisplayName(label: string): string {
+    const displayNames: Record<string, string> = {
+        CALENTAMIENTO: 'Calentamiento',
+        DESCALENTAMIENTO: 'Descalentamiento',
+        FUERZA: 'Fuerza',
+        SERIES: 'Series',
+        TEMPO: 'Tempo',
+        RODAJE: 'Rodaje',
+        CUESTAS: 'Cuestas',
+        RECUPERACION: 'Recuperación',
+        PROGRESIVO: 'Progresivo',
+        FARTLEK: 'Fartlek',
+        COMPETICION: 'Competición',
+        OTRO: 'Otros',
+    };
+    return displayNames[label] || label || 'Otros';
+}
+
+// Helper: Normalize workout title for grouping - now considers label first
+function normalizeTitle(title: string, label?: string): string {
+    // If we have a valid label, use it as the primary grouping
+    if (label && label !== 'OTRO') {
+        return getLabelDisplayName(label);
+    }
+
     // Remove time of day variations
     let normalized = title
         .toLowerCase()
@@ -101,7 +125,7 @@ function normalizeTitle(title: string): string {
 
     // For generic "carrera" titles, use the main word
     if (normalized.includes('carrera')) {
-        return 'rodaje';
+        return 'Rodaje';
     }
 
     return normalized.slice(0, 30);
@@ -162,17 +186,18 @@ export default function ProgressView() {
                 const allWorkouts = (dashboardData.recentCompleted || []) as WorkoutWithLaps[];
                 setWorkouts(allWorkouts);
 
-                // Group workouts by normalized title
+                // Group workouts by label (workout type) primarily, then by normalized title
                 const typeMap = new Map<string, WorkoutWithLaps[]>();
                 allWorkouts.forEach(w => {
                     const title = (w as any).title || '';
-                    if (!title) return;
+                    const label = (w as any).label || 'OTRO';
 
-                    const normalizedTitle = normalizeTitle(title);
-                    if (!typeMap.has(normalizedTitle)) {
-                        typeMap.set(normalizedTitle, []);
+                    // Use label-based grouping for better accuracy
+                    const groupKey = normalizeTitle(title, label);
+                    if (!typeMap.has(groupKey)) {
+                        typeMap.set(groupKey, []);
                     }
-                    typeMap.get(normalizedTitle)!.push(w);
+                    typeMap.get(groupKey)!.push(w);
                 });
 
                 const types: WorkoutTypeOption[] = Array.from(typeMap.entries())

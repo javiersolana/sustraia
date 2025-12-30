@@ -13,6 +13,7 @@ export interface User {
   role: 'ATLETA' | 'COACH';
   createdAt: string;
   coachId?: string;
+  weeklyGoalKm?: number;
 }
 
 export interface AuthResponse {
@@ -218,6 +219,15 @@ class ApiClient {
     getProfile: () => this.request<{ user: User }>('/auth/profile'),
   };
 
+  // User endpoints
+  user = {
+    updateWeeklyGoal: (weeklyGoalKm: number) =>
+      this.request<{ user: User }>('/user/profile/goal', {
+        method: 'PUT',
+        body: JSON.stringify({ weeklyGoalKm }),
+      }),
+  };
+
   // Workout endpoints
   workouts = {
     getAll: (page = 1, limit = 20) =>
@@ -323,6 +333,23 @@ class ApiClient {
       this.request<{ laps: StravaLap[] }>(
         `/strava/activities/${activityId}/laps`
       ),
+
+    reclassifyWorkouts: (force = false) =>
+      this.request<{
+        success: boolean;
+        reclassified: number;
+        failed: number;
+        total: number;
+        results: Array<{
+          id: string;
+          title: string;
+          type: string;
+          description: string;
+          confidence: string;
+        }>;
+      }>(`/strava/reclassify${force ? '?force=true' : ''}`, {
+        method: 'POST',
+      }),
   };
 
   // Training Plans endpoints
@@ -512,6 +539,102 @@ class ApiClient {
           method: 'DELETE',
         }
       ),
+
+    reclassifyAthleteWorkouts: (athleteId: string, force = false) =>
+      this.request<{
+        success: boolean;
+        athleteId: string;
+        athleteName: string;
+        reclassified: number;
+        failed: number;
+        total: number;
+        results: Array<{
+          id: string;
+          title: string;
+          type: string;
+          description: string;
+          confidence: string;
+        }>;
+      }>(`/admin/athletes/${athleteId}/reclassify${force ? '?force=true' : ''}`, {
+        method: 'POST',
+      }),
+  };
+
+  // Notes and Goals endpoints
+  notes = {
+    // Coach notes for athletes
+    getAthleteNotes: (athleteId: string) =>
+      this.request<{
+        notes: Array<{
+          id: string;
+          content: string;
+          createdAt: string;
+          updatedAt: string;
+        }>;
+      }>(`/athletes/${athleteId}/notes`),
+
+    addAthleteNote: (athleteId: string, content: string) =>
+      this.request<{
+        note: {
+          id: string;
+          content: string;
+          createdAt: string;
+        };
+      }>(`/athletes/${athleteId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+      }),
+
+    deleteNote: (noteId: string) =>
+      this.request<{ success: boolean }>(`/notes/${noteId}`, {
+        method: 'DELETE',
+      }),
+  };
+
+  goals = {
+    // Athlete goals (races, objectives)
+    getAthleteGoals: (athleteId: string) =>
+      this.request<{
+        goals: Array<{
+          id: string;
+          name: string;
+          date: string;
+          distance?: number;
+          description?: string;
+          type: string;
+          createdAt: string;
+          coach?: { name: string };
+        }>;
+      }>(`/athletes/${athleteId}/goals`),
+
+    addAthleteGoal: (
+      athleteId: string,
+      data: {
+        name: string;
+        date: string;
+        distance?: number;
+        description?: string;
+        type?: string;
+      }
+    ) =>
+      this.request<{
+        goal: {
+          id: string;
+          name: string;
+          date: string;
+          distance?: number;
+          description?: string;
+          type: string;
+        };
+      }>(`/athletes/${athleteId}/goals`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    deleteGoal: (goalId: string) =>
+      this.request<{ success: boolean }>(`/goals/${goalId}`, {
+        method: 'DELETE',
+      }),
   };
 }
 

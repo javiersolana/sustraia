@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/prisma';
+import { UserRole } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
 
@@ -9,7 +10,7 @@ export const registerValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
   body('name').trim().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
-  body('role').isIn(['ATLETA', 'COACH']).withMessage('Role must be ATLETA or COACH'),
+  body('role').isIn([UserRole.ATLETA, UserRole.COACH]).withMessage('Role must be ATLETA or COACH'),
 ];
 
 export const loginValidation = [
@@ -137,6 +138,7 @@ export async function getProfile(req: Request, res: Response) {
         role: true,
         createdAt: true,
         coachId: true,
+        weeklyGoalKm: true,
       },
     });
 

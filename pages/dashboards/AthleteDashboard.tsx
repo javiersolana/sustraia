@@ -4,7 +4,7 @@ import Sidebar from '../../components/dashboards/Sidebar';
 import Calendar from '../../components/dashboards/Calendar';
 import ActivityDetailModal from '../../components/dashboards/ActivityDetailModal';
 import { Role, WeeklyActivity } from '../../lib/types/dashboard';
-import { Bell, Flame, ChevronRight, Clock, MapPin, PlayCircle, CheckCircle2, Circle, Loader2, X } from 'lucide-react';
+import { Bell, Flame, ChevronRight, Clock, MapPin, PlayCircle, CheckCircle2, Circle, Loader2, X, Heart, Activity, TrendingUp } from 'lucide-react';
 import Card from '../../components/dashboards/ui/Card';
 import Badge from '../../components/dashboards/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,6 +24,7 @@ interface DashboardData {
   upcomingWorkouts: Workout[];
   recentCompleted: CompletedWorkout[];
   unreadMessages: number;
+  weeklyGoalKm?: number;
   user?: { id: string; name: string; email: string; coachId?: string };
   coach?: { id: string; name: string; email: string } | null;
 }
@@ -49,6 +50,9 @@ const AthleteDashboard: React.FC = () => {
         // Get coach info if user has one
         let coachData = null;
         if ((profileData.user as any).coachId) {
+          // TODO: Implement a safe endpoint to get coach info without admin rights
+          // For now, we skip this to avoid 403 errors
+          /*
           try {
             const coachResponse = await api.admin.getAllUsers();
             const coach = coachResponse.users.find(u => u.id === (profileData.user as any).coachId);
@@ -58,6 +62,7 @@ const AthleteDashboard: React.FC = () => {
           } catch (err) {
             console.log('Could not fetch coach info:', err);
           }
+          */
         }
 
         setData({
@@ -128,25 +133,61 @@ const AthleteDashboard: React.FC = () => {
     value: i < 6 ? Math.floor(Math.random() * 5) + 1 : Math.floor((data.stats.weeklyWorkouts || 0) / 7) || 1,
   }));
 
-  // Generate weekly calendar from upcoming workouts
+  // Generate weekly calendar from training plans AND upcoming workouts
   const today = new Date();
-  const weeklyCalendar: WeeklyActivity[] = Array.from({ length: 7 }, (_, i) => {
+  interface WeeklyActivityExtended extends WeeklyActivity {
+    plan?: TrainingPlan;
+    completed?: CompletedWorkout;
+    fullDate: Date;
+  }
+
+  const weeklyCalendar: WeeklyActivityExtended[] = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(today);
     date.setDate(today.getDate() + i);
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-    // Find workout for this date
+    // Find training plan for this date (from coach)
+    const plan = trainingPlans.find(p => {
+      const pDate = new Date(p.date);
+      return pDate.toDateString() === date.toDateString();
+    });
+
+    // Find workout for this date (legacy)
     const workout = data.upcomingWorkouts.find(w => {
       const wDate = new Date(w.date);
       return wDate.toDateString() === date.toDateString();
     });
 
+    // Find if there's a completed workout for this date
+    const completed = data.recentCompleted.find(c => {
+      const cDate = new Date(c.completedAt);
+      return cDate.toDateString() === date.toDateString();
+    });
+
+    // Determine type from plan or workout
+    let type: string = 'REST';
+    let title: string | undefined;
+    if (plan) {
+      // Infer type from plan blocks
+      const hasIntervals = plan.blocks?.some(b => b.type === 'INTERVALS');
+      const hasRun = plan.blocks?.some(b => b.type === 'RUN');
+      type = hasIntervals ? 'INTERVALS' : hasRun ? 'RUN' : 'RUN';
+      title = plan.title;
+    } else if (workout) {
+      type = workout.type;
+      title = workout.title;
+    }
+
     return {
       day: dayNames[date.getDay()],
       date: date.getDate().toString(),
-      type: workout ? workout.type : 'REST',
-      status: workout?.completedVersion ? 'COMPLETED' : 'PENDING',
+      type,
+      status: completed ? 'COMPLETED' : (plan || workout) ? 'PENDING' : 'REST',
       isToday: i === 0,
+      title,
+      plan,
+      completed,
+      fullDate: date,
     };
   });
 
@@ -168,7 +209,24 @@ const AthleteDashboard: React.FC = () => {
     })),
   ];
 
-  // Get next workout
+  // Get next workout - prioritize training plans over legacy workouts
+  const getNextTrainingPlan = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Filter training plans that are today or in the future, sorted by date
+    const upcomingPlans = trainingPlans
+      .filter(plan => {
+        const planDate = new Date(plan.date);
+        planDate.setHours(0, 0, 0, 0);
+        return planDate >= today;
+      })
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return upcomingPlans[0] || null;
+  };
+
+  const nextTrainingPlan = getNextTrainingPlan();
   const nextWorkout = data.upcomingWorkouts[0];
 
   // Format date
@@ -214,7 +272,57 @@ const AthleteDashboard: React.FC = () => {
 
           {/* Widget A: Next Workout */}
           <Card highlight delay={0} className="flex flex-col justify-between min-h-[240px]">
-            {nextWorkout ? (
+            {nextTrainingPlan ? (
+              <>
+                <div>
+                  <Badge variant="accent" className="bg-white/20 text-white border-none mb-4">
+                    {new Date(nextTrainingPlan.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }).toUpperCase()}
+                  </Badge>
+                  <h3 className="font-display text-3xl font-bold mb-2 leading-tight">
+                    {nextTrainingPlan.title}
+                  </h3>
+                  {nextTrainingPlan.description && (
+                    <p className="text-white/80 text-sm mb-2 line-clamp-2">
+                      {nextTrainingPlan.description}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-4 text-white/80 text-sm font-medium">
+                    {nextTrainingPlan.blocks && nextTrainingPlan.blocks.length > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Clock size={16} /> {nextTrainingPlan.blocks.length} bloques
+                      </span>
+                    )}
+                    {(() => {
+                      // Calculate total distance from blocks
+                      const totalDistance = nextTrainingPlan.blocks?.reduce((sum, block) =>
+                        sum + (block.distanceMeters || 0), 0) || 0;
+                      if (totalDistance > 0) {
+                        return (
+                          <span className="flex items-center gap-1">
+                            <MapPin size={16} /> {(totalDistance / 1000).toFixed(1)} km
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedEvent({
+                      id: nextTrainingPlan.id,
+                      date: new Date(nextTrainingPlan.date),
+                      type: 'plan',
+                      title: nextTrainingPlan.title,
+                      data: nextTrainingPlan,
+                    });
+                  }}
+                  className="bg-white text-sustraia-accent font-bold py-3 px-6 rounded-full w-fit hover:bg-gray-100 transition-colors"
+                >
+                  Ver detalles
+                </button>
+              </>
+            ) : nextWorkout ? (
               <>
                 <div>
                   <Badge variant="accent" className="bg-white/20 text-white border-none mb-4">
@@ -277,7 +385,8 @@ const AthleteDashboard: React.FC = () => {
           {/* Widget C: Weekly Goal */}
           <Card delay={2} className="flex flex-col items-center justify-center relative">
             {(() => {
-              const weeklyGoal = 20000; // 20km default goal
+              const weeklyGoalKm = data.weeklyGoalKm ?? 20; // From user settings, default 20km
+              const weeklyGoal = weeklyGoalKm * 1000; // Convert to meters
               const current = data.stats.weeklyDistance || 0;
               const percentage = Math.min((current / weeklyGoal) * 100, 100);
               return (
@@ -300,7 +409,7 @@ const AthleteDashboard: React.FC = () => {
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <span className="font-display font-bold text-xl">
-                        {(current / 1000).toFixed(1)} / {weeklyGoal / 1000}
+                        {(current / 1000).toFixed(1)} / {weeklyGoalKm}
                       </span>
                       <span className="text-xs text-sustraia-gray font-medium uppercase">km</span>
                     </div>
@@ -330,12 +439,26 @@ const AthleteDashboard: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
+                onClick={() => {
+                  if (day.plan) {
+                    setSelectedEvent({
+                      id: day.plan.id,
+                      date: new Date(day.plan.date),
+                      type: 'plan',
+                      title: day.plan.title,
+                      data: day.plan,
+                    });
+                  } else if (day.completed) {
+                    navigate(`/dashboard/atleta/actividades/${day.completed.id}`);
+                  }
+                }}
                 className={`
                   p-4 rounded-3xl min-h-[140px] flex flex-col justify-between border transition-all
                   ${day.isToday
                     ? 'bg-white border-sustraia-accent ring-1 ring-sustraia-accent shadow-md'
                     : 'bg-white border-sustraia-light-gray hover:border-gray-300'
                   }
+                  ${(day.plan || day.completed) ? 'cursor-pointer hover:shadow-lg hover:-translate-y-1' : ''}
                 `}
               >
                 <div className="flex justify-between items-start">
@@ -348,12 +471,22 @@ const AthleteDashboard: React.FC = () => {
                 </div>
 
                 <div className="mt-2">
-                  {day.type === 'REST' ? (
+                  {day.status === 'REST' || day.type === 'REST' ? (
                     <span className="text-sm font-medium text-gray-400">Descanso</span>
                   ) : (
-                    <Badge variant={day.type === 'RUN' ? 'accent' : 'warning'} className="w-full justify-center">
-                      {day.type === 'RUN' ? 'Carrera' : 'Fuerza'}
-                    </Badge>
+                    <div className="space-y-1">
+                      <Badge
+                        variant={day.type === 'INTERVALS' ? 'warning' : 'accent'}
+                        className="w-full justify-center text-xs"
+                      >
+                        {day.type === 'RUN' ? 'Carrera' : day.type === 'INTERVALS' ? 'Series' : 'Entreno'}
+                      </Badge>
+                      {day.title && (
+                        <p className="text-xs text-gray-500 truncate" title={day.title}>
+                          {day.title.length > 15 ? day.title.substring(0, 15) + '...' : day.title}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -534,8 +667,18 @@ const AthleteDashboard: React.FC = () => {
             >
               {selectedEvent.type === 'plan' ? (
                 <div className="p-6">
-                  <div className="flex justify-between items-start mb-6">
-                    <h3 className="font-display font-bold text-xl">{selectedEvent.title}</h3>
+                  {/* Header */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-display font-bold text-2xl text-sustraia-text">{selectedEvent.title}</h3>
+                      <p className="text-sustraia-gray text-sm mt-1">
+                        {new Date(selectedEvent.date).toLocaleDateString('es-ES', {
+                          weekday: 'long',
+                          day: 'numeric',
+                          month: 'long'
+                        })}
+                      </p>
+                    </div>
                     <button
                       onClick={() => setSelectedEvent(null)}
                       className="p-2 hover:bg-gray-100 rounded-full"
@@ -544,50 +687,198 @@ const AthleteDashboard: React.FC = () => {
                     </button>
                   </div>
 
-                  <p className="text-sustraia-gray mb-4">
-                    {new Date(selectedEvent.date).toLocaleDateString('es-ES', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long'
-                    })}
-                  </p>
+                  {/* Summary Stats */}
+                  {(() => {
+                    const plan = selectedEvent.data as TrainingPlan;
+                    const totalDistance = plan.blocks?.reduce((sum, b) => sum + (b.distanceMeters || 0), 0) || 0;
+                    const totalDuration = plan.blocks?.reduce((sum, b) => sum + (b.durationSeconds || 0), 0) || 0;
+                    const hasIntervals = plan.blocks?.some(b => b.type === 'INTERVALS');
 
-                  {(selectedEvent.data as TrainingPlan).description && (
-                    <p className="text-gray-600 mb-4">
-                      {(selectedEvent.data as TrainingPlan).description}
-                    </p>
-                  )}
-
-                  <h4 className="font-bold text-sm uppercase text-gray-500 mb-3">Bloques de entrenamiento</h4>
-                  <div className="space-y-2">
-                    {(selectedEvent.data as TrainingPlan).blocks?.map((block, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                        <span className={`w-3 h-3 rounded-full ${block.type === 'WARMUP' ? 'bg-yellow-400' :
-                          block.type === 'RUN' ? 'bg-green-500' :
-                            block.type === 'INTERVALS' ? 'bg-red-500' :
-                              block.type === 'REST' ? 'bg-gray-400' :
-                                'bg-blue-400'
-                          }`} />
-                        <div className="flex-1">
-                          <span className="font-medium text-sm">
-                            {block.type === 'WARMUP' ? 'Calentamiento' :
-                              block.type === 'RUN' ? 'Carrera' :
-                                block.type === 'INTERVALS' ? 'Series' :
-                                  block.type === 'REST' ? 'Descanso' :
-                                    'Enfriamiento'}
+                    return (
+                      <div className="grid grid-cols-3 gap-3 mb-6">
+                        {totalDistance > 0 && (
+                          <div className="bg-blue-50 rounded-2xl p-4 text-center">
+                            <MapPin className="w-5 h-5 text-blue-600 mx-auto mb-1" />
+                            <span className="font-display font-bold text-xl text-blue-700 block">
+                              {(totalDistance / 1000).toFixed(1)}
+                            </span>
+                            <span className="text-xs text-blue-600">km</span>
+                          </div>
+                        )}
+                        {totalDuration > 0 && (
+                          <div className="bg-green-50 rounded-2xl p-4 text-center">
+                            <Clock className="w-5 h-5 text-green-600 mx-auto mb-1" />
+                            <span className="font-display font-bold text-xl text-green-700 block">
+                              {Math.floor(totalDuration / 60)}
+                            </span>
+                            <span className="text-xs text-green-600">min</span>
+                          </div>
+                        )}
+                        <div className="bg-purple-50 rounded-2xl p-4 text-center">
+                          <Activity className="w-5 h-5 text-purple-600 mx-auto mb-1" />
+                          <span className="font-display font-bold text-xl text-purple-700 block">
+                            {plan.blocks?.length || 0}
                           </span>
-                          <span className="text-xs text-gray-500 ml-2">
-                            {block.durationSeconds
-                              ? `${Math.floor(block.durationSeconds / 60)} min`
-                              : block.distanceMeters
-                                ? `${(block.distanceMeters / 1000).toFixed(1)} km`
-                                : ''
-                            }
-                          </span>
+                          <span className="text-xs text-purple-600">bloques</span>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })()}
+
+                  {/* Description */}
+                  {(selectedEvent.data as TrainingPlan).description && (
+                    <div className="bg-gray-50 rounded-2xl p-4 mb-6">
+                      <p className="text-gray-700 text-sm leading-relaxed">
+                        {(selectedEvent.data as TrainingPlan).description}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Bloques de entrenamiento */}
+                  <h4 className="font-bold text-sm uppercase text-gray-500 mb-3 flex items-center gap-2">
+                    <TrendingUp size={16} />
+                    Estructura del entrenamiento
+                  </h4>
+                  <div className="space-y-3">
+                    {(selectedEvent.data as TrainingPlan).blocks?.map((block, i) => {
+                      const blockColor = block.type === 'WARMUP' ? 'yellow' :
+                        block.type === 'RUN' ? 'green' :
+                          block.type === 'INTERVALS' ? 'red' :
+                            block.type === 'REST' ? 'gray' : 'blue';
+
+                      const blockName = block.type === 'WARMUP' ? 'Calentamiento' :
+                        block.type === 'RUN' ? 'Carrera continua' :
+                          block.type === 'INTERVALS' ? 'Series' :
+                            block.type === 'REST' ? 'Recuperación' : 'Enfriamiento';
+
+                      // Format pace (seconds per km to min:ss)
+                      const formatPace = (secPerKm: number) => {
+                        const min = Math.floor(secPerKm / 60);
+                        const sec = Math.round(secPerKm % 60);
+                        return `${min}:${sec.toString().padStart(2, '0')}`;
+                      };
+
+                      return (
+                        <div
+                          key={i}
+                          className={`p-4 rounded-2xl border-l-4 ${
+                            blockColor === 'yellow' ? 'bg-yellow-50 border-yellow-400' :
+                            blockColor === 'green' ? 'bg-green-50 border-green-500' :
+                            blockColor === 'red' ? 'bg-red-50 border-red-500' :
+                            blockColor === 'gray' ? 'bg-gray-100 border-gray-400' :
+                            'bg-blue-50 border-blue-400'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <span className={`font-bold text-sm ${
+                              blockColor === 'yellow' ? 'text-yellow-700' :
+                              blockColor === 'green' ? 'text-green-700' :
+                              blockColor === 'red' ? 'text-red-700' :
+                              blockColor === 'gray' ? 'text-gray-600' :
+                              'text-blue-700'
+                            }`}>
+                              {blockName}
+                            </span>
+                            <span className="text-xs text-gray-500 bg-white px-2 py-1 rounded-full">
+                              Bloque {i + 1}
+                            </span>
+                          </div>
+
+                          {/* Duration/Distance */}
+                          <div className="flex flex-wrap gap-4 text-sm">
+                            {block.distanceMeters && block.distanceMeters > 0 && (
+                              <div className="flex items-center gap-1">
+                                <MapPin size={14} className="text-gray-400" />
+                                <span className="font-mono font-medium">
+                                  {block.distanceMeters >= 1000
+                                    ? `${(block.distanceMeters / 1000).toFixed(1)} km`
+                                    : `${block.distanceMeters} m`
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            {block.durationSeconds && block.durationSeconds > 0 && (
+                              <div className="flex items-center gap-1">
+                                <Clock size={14} className="text-gray-400" />
+                                <span className="font-mono font-medium">
+                                  {block.durationSeconds >= 60
+                                    ? `${Math.floor(block.durationSeconds / 60)} min`
+                                    : `${block.durationSeconds} seg`
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            {block.repetitions && block.repetitions > 1 && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-gray-400">×</span>
+                                <span className="font-mono font-medium">{block.repetitions} reps</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Pace targets */}
+                          {(block.paceMin || block.paceMax) && (
+                            <div className="mt-2 pt-2 border-t border-gray-200/50">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-500">Ritmo objetivo:</span>
+                                <span className="font-mono text-sm font-bold text-sustraia-accent">
+                                  {block.paceMin && block.paceMax
+                                    ? `${formatPace(block.paceMin)} - ${formatPace(block.paceMax)} /km`
+                                    : block.paceMin
+                                      ? `< ${formatPace(block.paceMin)} /km`
+                                      : `> ${formatPace(block.paceMax!)} /km`
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* HR targets */}
+                          {(block.hrMin || block.hrMax) && (
+                            <div className="mt-2 pt-2 border-t border-gray-200/50">
+                              <div className="flex items-center gap-2">
+                                <Heart size={14} className="text-red-400" />
+                                <span className="text-xs text-gray-500">FC objetivo:</span>
+                                <span className="font-mono text-sm font-bold text-red-600">
+                                  {block.hrMin && block.hrMax
+                                    ? `${block.hrMin} - ${block.hrMax} bpm`
+                                    : block.hrMin
+                                      ? `> ${block.hrMin} bpm`
+                                      : `< ${block.hrMax} bpm`
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Rest between reps */}
+                          {block.restSeconds && block.restSeconds > 0 && (
+                            <div className="mt-2 text-xs text-gray-500">
+                              Descanso entre series: {block.restSeconds >= 60
+                                ? `${Math.floor(block.restSeconds / 60)} min`
+                                : `${block.restSeconds} seg`
+                              }
+                            </div>
+                          )}
+
+                          {/* Notes */}
+                          {block.notes && (
+                            <div className="mt-2 pt-2 border-t border-gray-200/50">
+                              <p className="text-xs text-gray-600 italic">{block.notes}</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
+
+                  {/* Action button */}
+                  <button
+                    onClick={() => setSelectedEvent(null)}
+                    className="w-full mt-6 py-3 bg-sustraia-accent text-white rounded-full font-bold hover:bg-sustraia-accent-hover transition-colors"
+                  >
+                    Entendido
+                  </button>
                 </div>
               ) : (
                 <ActivityDetailModal

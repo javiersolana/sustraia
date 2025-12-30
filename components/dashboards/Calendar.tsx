@@ -6,9 +6,9 @@ import type { TrainingPlan, CompletedWorkout } from '../../lib/api/client';
 interface CalendarEvent {
     id: string;
     date: Date;
-    type: 'plan' | 'completed';
+    type: 'plan' | 'completed' | 'race';
     title: string;
-    data: TrainingPlan | (CompletedWorkout & { title?: string });
+    data: TrainingPlan | (CompletedWorkout & { title?: string }) | any;
 }
 
 interface CalendarProps {

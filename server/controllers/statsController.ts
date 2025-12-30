@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../config/prisma';
 
+import { calculateDynamicWeeklyGoal } from '../utils/goalCalculator';
+
 /**
  * Calculate and store stats for a user
  */
@@ -172,12 +174,24 @@ export async function getDashboard(req: Request, res: Response) {
     // Recalculate stats
     const stats = await calculateStats(req.user.userId);
 
+    // Get user's weekly goal setting
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { weeklyGoalKm: true },
+    });
+
+    // Calculate dynamic goal based on training plans
+    const weeklyGoalKm = await calculateDynamicWeeklyGoal(req.user.userId, user?.weeklyGoalKm || null);
+
     // Get upcoming workouts
     const upcomingWorkouts = await prisma.workout.findMany({
       where: {
-        assignedTo: req.user.userId,
+        OR: [
+          { assignedTo: req.user.userId }, // Assigned workouts
+          { userId: req.user.userId }      // Created by user
+        ],
         date: {
-          gte: new Date(),
+          gte: new Date(new Date().setHours(0, 0, 0, 0)), // From start of today
         },
       },
       include: {
@@ -230,6 +244,7 @@ export async function getDashboard(req: Request, res: Response) {
         },
         {} as Record<string, number>
       ),
+      weeklyGoalKm,
       upcomingWorkouts,
       recentCompleted,
       unreadMessages,
@@ -312,15 +327,164 @@ export async function getCoachDashboard(req: Request, res: Response) {
       },
     });
 
+    // Generate alerts for athletes with issues
+    const alerts = await generateCoachAlerts(req.user.userId, athletes);
+
     res.json({
       athletes: athletesWithStats,
       recentWorkouts,
       unreadMessages,
+      alerts,
     });
   } catch (error) {
     console.error('Get coach dashboard error:', error);
     res.status(500).json({ error: 'Failed to fetch coach dashboard data' });
   }
+}
+
+/**
+ * Generate alerts for coach about athlete issues
+ */
+async function generateCoachAlerts(
+  coachId: string,
+  athletes: { id: string; name: string; email: string }[]
+): Promise<Array<{
+  id: string;
+  type: 'missed_workout' | 'low_compliance' | 'no_activity';
+  athleteId: string;
+  athleteName: string;
+  message: string;
+  detail: string;
+  createdAt: Date;
+}>> {
+  const alerts: Array<{
+    id: string;
+    type: 'missed_workout' | 'low_compliance' | 'no_activity';
+    athleteId: string;
+    athleteName: string;
+    message: string;
+    detail: string;
+    createdAt: Date;
+  }> = [];
+
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+  for (const athlete of athletes) {
+    // Check for missed training plans (plans in the past without completed workouts near that date)
+    const pastPlans = await prisma.trainingPlan.findMany({
+      where: {
+        athleteId: athlete.id,
+        coachId,
+        date: {
+          gte: sevenDaysAgo,
+          lt: now,
+        },
+      },
+      orderBy: { date: 'desc' },
+    });
+
+    for (const plan of pastPlans) {
+      const planDate = new Date(plan.date);
+      const dayBefore = new Date(planDate.getTime() - 24 * 60 * 60 * 1000);
+      const dayAfter = new Date(planDate.getTime() + 24 * 60 * 60 * 1000);
+
+      // Check if there's a completed workout within ±1 day of the plan
+      const completedNearPlan = await prisma.completedWorkout.findFirst({
+        where: {
+          userId: athlete.id,
+          completedAt: {
+            gte: dayBefore,
+            lte: dayAfter,
+          },
+        },
+      });
+
+      if (!completedNearPlan) {
+        const daysAgo = Math.floor((now.getTime() - planDate.getTime()) / (24 * 60 * 60 * 1000));
+        alerts.push({
+          id: `missed-${plan.id}`,
+          type: 'missed_workout',
+          athleteId: athlete.id,
+          athleteName: athlete.name,
+          message: `${athlete.name} no completó "${plan.title}"`,
+          detail: `Hace ${daysAgo} día${daysAgo > 1 ? 's' : ''} • ${plan.title}`,
+          createdAt: planDate,
+        });
+      }
+    }
+
+    // Check for athletes with no activity in 7+ days
+    const lastActivity = await prisma.completedWorkout.findFirst({
+      where: { userId: athlete.id },
+      orderBy: { completedAt: 'desc' },
+    });
+
+    if (!lastActivity) {
+      // No activity ever
+      alerts.push({
+        id: `no-activity-${athlete.id}`,
+        type: 'no_activity',
+        athleteId: athlete.id,
+        athleteName: athlete.name,
+        message: `${athlete.name} no tiene actividad registrada`,
+        detail: 'Sin entrenamientos sincronizados',
+        createdAt: now,
+      });
+    } else {
+      const lastActivityDate = new Date(lastActivity.completedAt);
+      const daysSinceActivity = Math.floor((now.getTime() - lastActivityDate.getTime()) / (24 * 60 * 60 * 1000));
+
+      if (daysSinceActivity >= 7) {
+        alerts.push({
+          id: `inactive-${athlete.id}`,
+          type: 'no_activity',
+          athleteId: athlete.id,
+          athleteName: athlete.name,
+          message: `${athlete.name} lleva ${daysSinceActivity} días sin entrenar`,
+          detail: `Última actividad: ${lastActivityDate.toLocaleDateString('es-ES')}`,
+          createdAt: lastActivityDate,
+        });
+      }
+    }
+
+    // Check low weekly compliance (less than 2 workouts when they usually do more)
+    const weeklyWorkouts = await prisma.completedWorkout.count({
+      where: {
+        userId: athlete.id,
+        completedAt: { gte: sevenDaysAgo },
+      },
+    });
+
+    const previousWeekWorkouts = await prisma.completedWorkout.count({
+      where: {
+        userId: athlete.id,
+        completedAt: {
+          gte: fourteenDaysAgo,
+          lt: sevenDaysAgo,
+        },
+      },
+    });
+
+    // Alert if they did at least 3 workouts last week but less than 2 this week
+    if (previousWeekWorkouts >= 3 && weeklyWorkouts < 2) {
+      alerts.push({
+        id: `low-compliance-${athlete.id}`,
+        type: 'low_compliance',
+        athleteId: athlete.id,
+        athleteName: athlete.name,
+        message: `${athlete.name} ha bajado su ritmo de entrenamiento`,
+        detail: `${weeklyWorkouts} entreno${weeklyWorkouts !== 1 ? 's' : ''} esta semana vs ${previousWeekWorkouts} la anterior`,
+        createdAt: now,
+      });
+    }
+  }
+
+  // Sort alerts by date (most recent first) and limit to 10
+  return alerts
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 10);
 }
 
 /**

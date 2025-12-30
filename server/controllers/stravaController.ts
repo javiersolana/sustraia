@@ -12,7 +12,9 @@ import {
   getDetailedActivity,
 } from '../services/stravaService';
 import { prisma } from '../config/prisma';
-import { classifyWorkout, WorkoutType } from '../services/workoutClassifier';
+import { classifyWorkout, WorkoutType, ClassificationContext } from '../services/workoutClassifier';
+import { calculateHRZones } from '../services/hrZonesService';
+import { getAthleteHistoricalStats } from '../services/athleteHistoryService';
 
 /**
  * Get Strava OAuth authorization URL
@@ -290,6 +292,8 @@ function mapWorkoutTypeToLabel(workoutType: WorkoutType) {
 
 /**
  * Reclassify all workouts for the current user
+ * Query params:
+ * - force: if true, reclassify ALL workouts (even already classified ones)
  */
 export async function reclassifyWorkouts(req: Request, res: Response) {
   try {
@@ -298,20 +302,25 @@ export async function reclassifyWorkouts(req: Request, res: Response) {
     }
 
     const userId = req.user.userId;
+    const forceAll = req.query.force === 'true';
 
-    console.log(`🔄 Starting reclassification for user ${userId}`);
+    console.log(`🔄 Starting reclassification for user ${userId} (force: ${forceAll})`);
 
-    // Find workouts without classification
+    // Find workouts to reclassify
+    const whereClause = forceAll
+      ? { userId, stravaId: { not: null } }
+      : {
+          userId,
+          stravaId: { not: null },
+          OR: [
+            { workoutStructure: null },
+            { humanReadable: null },
+            { classificationConfidence: null }
+          ]
+        };
+
     const workouts = await prisma.completedWorkout.findMany({
-      where: {
-        userId,
-        stravaId: { not: null },
-        OR: [
-          { workoutStructure: null },
-          { humanReadable: null },
-          { classificationConfidence: null }
-        ]
-      },
+      where: whereClause,
       orderBy: { completedAt: 'desc' }
     });
 
@@ -330,6 +339,24 @@ export async function reclassifyWorkouts(req: Request, res: Response) {
     let failed = 0;
     const results: any[] = [];
 
+    // Get user profile for personalized classification
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { birthDate: true, maxHeartRate: true, restingHR: true }
+    });
+
+    // Build classification context
+    let classificationContext: ClassificationContext | undefined;
+    if (user) {
+      const hrZones = calculateHRZones(user.birthDate, user.maxHeartRate, user.restingHR);
+      const historyStats = await getAthleteHistoricalStats(userId);
+      classificationContext = {
+        hrZones,
+        athleteStats: historyStats || undefined
+      };
+      console.log(`👤 Using personalized classification with HR zones`);
+    }
+
     for (const workout of workouts) {
       try {
         if (!workout.stravaId) {
@@ -344,9 +371,10 @@ export async function reclassifyWorkouts(req: Request, res: Response) {
 
         console.log(`   📊 Splits: ${detailedActivity.splits_metric?.length || 0}`);
         console.log(`   🏁 Laps: ${detailedActivity.laps?.length || 0}`);
+        console.log(`   💓 HR: avg ${detailedActivity.average_heartrate || 'N/A'}, max ${detailedActivity.max_heartrate || 'N/A'}`);
 
-        // Classify
-        const classification = classifyWorkout(detailedActivity);
+        // Classify with context
+        const classification = classifyWorkout(detailedActivity, classificationContext);
         const label = mapWorkoutTypeToLabel(classification.workout_type);
 
         console.log(`   ✅ Classified as: ${classification.workout_type} (${classification.confidence})`);

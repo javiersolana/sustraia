@@ -12,6 +12,7 @@ import {
   X,
   Loader2,
   Shield,
+  RefreshCw,
 } from 'lucide-react';
 import { api } from '../lib/api/client';
 
@@ -55,6 +56,12 @@ const AdminPanel: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showCreateCoachForm, setShowCreateCoachForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [reclassifyingUser, setReclassifyingUser] = useState<string | null>(null);
+  const [reclassifyResult, setReclassifyResult] = useState<{
+    athleteName: string;
+    reclassified: number;
+    failed: number;
+  } | null>(null);
 
   // Create athlete form state
   const [createForm, setCreateForm] = useState({
@@ -164,6 +171,24 @@ const AdminPanel: React.FC = () => {
       fetchData();
     } catch (err: any) {
       alert(err.message || 'Failed to delete user');
+    }
+  };
+
+  const handleReclassify = async (userId: string, force = false) => {
+    if (!confirm(`¿Reclasificar ${force ? 'TODAS' : 'las nuevas'} actividades de este atleta? Esto puede tardar unos minutos.`)) return;
+
+    try {
+      setReclassifyingUser(userId);
+      const result = await api.admin.reclassifyAthleteWorkouts(userId, force);
+      setReclassifyResult({
+        athleteName: result.athleteName,
+        reclassified: result.reclassified,
+        failed: result.failed,
+      });
+    } catch (err: any) {
+      alert(err.message || 'Error al reclasificar actividades');
+    } finally {
+      setReclassifyingUser(null);
     }
   };
 
@@ -347,6 +372,21 @@ const AdminPanel: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          {user.role === 'ATLETA' && (
+                            <button
+                              onClick={() => handleReclassify(user.id, true)}
+                              disabled={reclassifyingUser === user.id}
+                              className={`p-2 hover:bg-purple-50 rounded-full transition-colors text-purple-600 ${
+                                reclassifyingUser === user.id ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                              title="Reclasificar actividades"
+                            >
+                              <RefreshCw
+                                size={16}
+                                className={reclassifyingUser === user.id ? 'animate-spin' : ''}
+                              />
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               setEditingUser(user);
@@ -552,6 +592,35 @@ const AdminPanel: React.FC = () => {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Reclassify Result Modal */}
+      {reclassifyResult && (
+        <Modal onClose={() => setReclassifyResult(null)}>
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-4">
+              <RefreshCw className="w-8 h-8 text-purple-600" />
+            </div>
+            <h2 className="font-display font-bold text-2xl mb-2">Reclasificación Completada</h2>
+            <p className="text-sustraia-gray mb-6">{reclassifyResult.athleteName}</p>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-green-50 p-4 rounded-2xl">
+                <div className="text-3xl font-bold text-green-600">{reclassifyResult.reclassified}</div>
+                <div className="text-sm text-green-700">Reclasificadas</div>
+              </div>
+              <div className="bg-red-50 p-4 rounded-2xl">
+                <div className="text-3xl font-bold text-red-600">{reclassifyResult.failed}</div>
+                <div className="text-sm text-red-700">Fallidas</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setReclassifyResult(null)}
+              className="w-full px-6 py-3 rounded-full bg-sustraia-accent text-white font-bold hover:bg-sustraia-accent-hover"
+            >
+              Cerrar
+            </button>
+          </div>
         </Modal>
       )}
 

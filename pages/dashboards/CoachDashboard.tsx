@@ -20,6 +20,16 @@ import { motion } from 'framer-motion';
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip, CartesianGrid } from 'recharts';
 import { api, type Workout } from '../../lib/api/client';
 
+interface Alert {
+  id: string;
+  type: 'missed_workout' | 'low_compliance' | 'no_activity';
+  athleteId: string;
+  athleteName: string;
+  message: string;
+  detail: string;
+  createdAt: string;
+}
+
 interface CoachDashboardData {
   athletes: Array<{
     id: string;
@@ -30,6 +40,7 @@ interface CoachDashboardData {
   }>;
   recentWorkouts: Workout[];
   unreadMessages: number;
+  alerts: Alert[];
 }
 
 const CoachDashboard: React.FC = () => {
@@ -305,50 +316,71 @@ const CoachDashboard: React.FC = () => {
 
           <div className="flex flex-col gap-8">
             {/* Alerts Section */}
-            <section>
-              <h3 className="font-display font-bold text-xl mb-4 flex items-center gap-2">
-                <AlertCircle className="text-red-500" />
-                Alertas
-              </h3>
-              <div className="space-y-4">
-                {[1, 2].map((i) => (
-                  <Card key={i} delay={6} className="bg-red-50/50 border-red-100 relative overflow-hidden group">
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-400"></div>
-                    <div className="flex gap-4">
-                      <div className="min-w-[40px] h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                        <AlertCircle size={20} />
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm text-gray-900">María López saltó 2 entrenamientos seguidos</p>
-                        <p className="text-xs text-gray-500 mt-1">Hace 4 horas • Plan Maratón</p>
-                        <button className="mt-3 text-xs font-bold bg-white px-3 py-1.5 rounded-full border border-red-200 text-red-600 hover:bg-red-600 hover:text-white transition-colors">
-                          Contactar
-                        </button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
+            {data.alerts && data.alerts.length > 0 && (
+              <section>
+                <h3 className="font-display font-bold text-xl mb-4 flex items-center gap-2">
+                  <AlertCircle className="text-red-500" />
+                  Alertas ({data.alerts.length})
+                </h3>
+                <div className="space-y-4">
+                  {data.alerts.map((alert, idx) => {
+                    const alertColor = alert.type === 'missed_workout' ? 'red' :
+                                       alert.type === 'no_activity' ? 'orange' : 'yellow';
+                    const bgColor = alertColor === 'red' ? 'bg-red-50/50 border-red-100' :
+                                    alertColor === 'orange' ? 'bg-orange-50/50 border-orange-100' :
+                                    'bg-yellow-50/50 border-yellow-100';
+                    const barColor = alertColor === 'red' ? 'bg-red-400' :
+                                     alertColor === 'orange' ? 'bg-orange-400' : 'bg-yellow-400';
+                    const iconBg = alertColor === 'red' ? 'bg-red-100 text-red-600' :
+                                   alertColor === 'orange' ? 'bg-orange-100 text-orange-600' :
+                                   'bg-yellow-100 text-yellow-600';
+                    const btnStyle = alertColor === 'red' ? 'border-red-200 text-red-600 hover:bg-red-600' :
+                                     alertColor === 'orange' ? 'border-orange-200 text-orange-600 hover:bg-orange-600' :
+                                     'border-yellow-200 text-yellow-600 hover:bg-yellow-600';
 
-            {/* General Compliance Chart */}
-            <Card delay={7} className="flex-1 flex flex-col">
-              <h3 className="font-display font-bold text-xl mb-6">Cumplimiento Global</h3>
-              <div className="flex-1 min-h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={complianceData} barGap={0} barCategoryGap="20%">
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5E5" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#666666', fontSize: 12 }} dy={10} />
-                    <Tooltip
-                      cursor={{ fill: '#F5F5F7' }}
-                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
-                    />
-                    <Bar dataKey="scheduled" name="Programado" fill="#E5E5E5" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="completed" name="Completado" fill="#0033FF" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
+                    return (
+                      <Card
+                        key={alert.id}
+                        delay={6 + idx * 0.1}
+                        className={`${bgColor} relative overflow-hidden group`}
+                      >
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${barColor}`}></div>
+                        <div className="flex gap-4">
+                          <div className={`min-w-[40px] h-10 rounded-full ${iconBg} flex items-center justify-center`}>
+                            <AlertCircle size={20} />
+                          </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{alert.message}</p>
+                            <p className="text-xs text-gray-500 mt-1">{alert.detail}</p>
+                            <button
+                              onClick={() => navigate(`/coach/athlete/${alert.athleteId}`)}
+                              className={`mt-3 text-xs font-bold bg-white px-3 py-1.5 rounded-full border ${btnStyle} hover:text-white transition-colors`}
+                            >
+                              Ver atleta
+                            </button>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* No alerts message */}
+            {(!data.alerts || data.alerts.length === 0) && (
+              <Card delay={6} className="bg-green-50/50 border-green-100">
+                <div className="flex items-center gap-4">
+                  <div className="min-w-[40px] h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <TrendingUp size={20} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-gray-900">Todo en orden</p>
+                    <p className="text-xs text-gray-500 mt-1">No hay alertas pendientes</p>
+                  </div>
+                </div>
+              </Card>
+            )}
           </div>
         </div>
       </main>
