@@ -384,17 +384,8 @@ export async function syncActivityToWorkout(
     detailedActivity = null;
   }
 
-  // Build complete workout structure with classification + raw data
-  const completeStructure = classification && detailedActivity ? {
-    classification: classification.structure,
-    rawData: {
-      splits: detailedActivity.splits_metric,
-      laps: detailedActivity.laps,
-      elevation: detailedActivity.total_elevation_gain
-    }
-  } : null;
-
   // Create completed workout with classification data
+  // Note: workoutStructure, classificationConfidence, humanReadable are not in schema yet
   await prisma.completedWorkout.create({
     data: {
       userId,
@@ -408,10 +399,7 @@ export async function syncActivityToWorkout(
       actualDistance: activity.distance,
       avgHeartRate: activity.average_heartrate,
       maxHeartRate: activity.max_heartrate,
-      calories: activity.calories,
-      workoutStructure: completeStructure as any,
-      classificationConfidence: classification?.confidence,
-      humanReadable: classification?.human_readable
+      calories: activity.calories
     },
   });
 
