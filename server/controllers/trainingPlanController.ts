@@ -105,54 +105,60 @@ export const createPlan: RequestHandler = async (req, res, next) => {
  * Get all training plans (coach sees their created, athlete sees assigned)
  */
 export const getPlans: RequestHandler = async (req, res, next) => {
-    try {
-        const userId = req.user!.userId;
-        const role = req.user!.role;
-        const { athleteId, startDate, endDate } = req.query;
+  try {
+    const userId = req.user!.userId;
+    const role = req.user!.role;
+    const { athleteId, startDate, endDate } = req.query;
 
-        let where: any = {};
-
-        if (role === 'COACH') {
-            where.coachId = userId;
-            if (athleteId) {
-                where.athleteId = athleteId as string;
-            }
-        } else {
-            // Athlete sees their assigned plans
-            where.athleteId = userId;
-        }
-
-        // Date range filter
-        if (startDate || endDate) {
-            where.date = {};
-            if (startDate) {
-                where.date.gte = new Date(startDate as string);
-            }
-            if (endDate) {
-                where.date.lte = new Date(endDate as string);
-            }
-        }
-
-        const plans = await prisma.trainingPlan.findMany({
-            where,
-            include: {
-                blocks: {
-                    orderBy: { order: 'asc' },
-                },
-                athlete: {
-                    select: { id: true, name: true, email: true },
-                },
-                coach: {
-                    select: { id: true, name: true },
-                },
-            },
-            orderBy: { date: 'asc' },
-        });
-
-        res.json(plans);
-    } catch (error) {
-        next(error);
+    // 🔒 SAFE GUARD:
+    // TrainingPlan model does not exist yet in Prisma
+    if (!(prisma as any).trainingPlan) {
+      return res.json([]);
     }
+
+    let where: any = {};
+
+    if (role === 'COACH') {
+      where.coachId = userId;
+      if (athleteId) {
+        where.athleteId = athleteId as string;
+      }
+    } else {
+      // Athlete sees their assigned plans
+      where.athleteId = userId;
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      where.date = {};
+      if (startDate) {
+        where.date.gte = new Date(startDate as string);
+      }
+      if (endDate) {
+        where.date.lte = new Date(endDate as string);
+      }
+    }
+
+    const plans = await (prisma as any).trainingPlan.findMany({
+      where,
+      include: {
+        blocks: {
+          orderBy: { order: 'asc' },
+        },
+        athlete: {
+          select: { id: true, name: true, email: true },
+        },
+        coach: {
+          select: { id: true, name: true },
+        },
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    res.json(plans);
+  } catch (error) {
+    next(error);
+  }
 };
 
 /**

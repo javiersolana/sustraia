@@ -22,7 +22,6 @@ model User {
   maxHeartRate Int?
   restingHR    Int?
   weeklyGoalKm Float?
-  workoutStructure       Json? 
 
   // Relaciones generales
   workouts          Workout[]
@@ -95,6 +94,8 @@ model CompletedWorkout {
   updatedAt      DateTime     @updatedAt
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   workout        Workout?     @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  workoutStructure Json?
+
 
   @@index([userId])
   @@index([completedAt])
