@@ -294,6 +294,7 @@ export async function getDetailedActivity(
 
 /**
  * Map WorkoutType from classifier to WorkoutLabel enum
+ * Maps to existing Prisma WorkoutLabel values: CALENTAMIENTO, DESCALENTAMIENTO, FUERZA, SERIES, TEMPO, RODAJE, CUESTAS, OTRO
  */
 function mapWorkoutTypeToLabel(workoutType: WorkoutType): WorkoutLabelType {
   const mapping: Record<WorkoutType, WorkoutLabelType> = {
@@ -301,10 +302,10 @@ function mapWorkoutTypeToLabel(workoutType: WorkoutType): WorkoutLabelType {
     TEMPO: 'TEMPO',
     RODAJE: 'RODAJE',
     CUESTAS: 'CUESTAS',
-    RECUPERACION: 'RECUPERACION',
-    PROGRESIVO: 'PROGRESIVO',
-    FARTLEK: 'FARTLEK',
-    COMPETICION: 'COMPETICION',
+    RECUPERACION: 'RODAJE', // Map to RODAJE (recovery run)
+    PROGRESIVO: 'TEMPO',    // Map to TEMPO (progressive is similar to tempo)
+    FARTLEK: 'SERIES',      // Map to SERIES (fartlek is interval-based)
+    COMPETICION: 'SERIES',  // Map to SERIES (competition effort is high intensity)
     OTRO: 'OTRO'
   };
 
