@@ -3,16 +3,22 @@ import { motion } from 'framer-motion';
 
 const experts = [
   {
-    name: "Jonander Garcia",
-    role: "Especialista Resistencia & Oposiciones",
-    image: "/images/jonander-garcia.jpg",
-    quote: "Atleta nacional. Su metodología ha ayudado a decenas de aspirantes a conseguir su plaza en Ertzaintza y Bomberos optimizando los tiempos de carrera y natación."
+    name: "Dr. Elena García",
+    role: "Directora de Rendimiento",
+    image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?q=80&w=2787&auto=format&fit=crop",
+    quote: "La ciencia aplicada al deporte es lo que separa un buen resultado de un récord."
   },
   {
-    name: "Unai Gazpio",
-    role: "MSc Sports Science & Fuerza",
-    image: "/images/unai-gazpio.jpg",
-    quote: "Especialista en desarrollo de fuerza aplicada. Se encarga de que ganes potencia para el press banca, cuerda y dominadas minimizando el riesgo de lesión."
+    name: "Marc Torres",
+    role: "Head Coach Oposiciones",
+    image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2940&auto=format&fit=crop",
+    quote: "No entrenamos para aprobar. Entrenamos para ser los mejores de la promoción."
+  },
+  {
+    name: "Sofía Mendez",
+    role: "Nutrición y Salud",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=2788&auto=format&fit=crop",
+    quote: "Tu cuerpo es el motor. La nutrición es el combustible de tu éxito."
   }
 ];
 
@@ -30,7 +36,7 @@ export const Experts: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {experts.map((expert, index) => (
             <motion.div
               key={index}
@@ -41,13 +47,13 @@ export const Experts: React.FC = () => {
               className="group relative"
             >
               <div className="h-[400px] w-full overflow-hidden rounded-xl grayscale group-hover:grayscale-0 transition-all duration-500 relative">
-                <img
-                  src={expert.image}
-                  alt={expert.name}
+                <img 
+                  src={expert.image} 
+                  alt={expert.name} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
-
+                
                 <div className="absolute bottom-0 left-0 p-6 w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                   <p className="text-rax-red font-bold text-xs uppercase tracking-widest mb-1">{expert.role}</p>
                   <h3 className="text-2xl font-bold text-white mb-3">{expert.name}</h3>

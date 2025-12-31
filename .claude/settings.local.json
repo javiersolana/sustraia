@@ -29,7 +29,8 @@
       "Bash(git push)",
       "Bash(cat:*)",
       "Bash(set \"DATABASE_URL=postgresql://postgres:HmllJ24yt22a.@db.ineieectzdczmggjrpey.supabase.co:5432/postgres\")",
-      "Bash($env:DATABASE_URL=\"postgresql://postgres:HmllJ24yt22a.@db.ineieectzdczmggjrpey.supabase.co:5432/postgres\")"
+      "Bash($env:DATABASE_URL=\"postgresql://postgres:HmllJ24yt22a.@db.ineieectzdczmggjrpey.supabase.co:5432/postgres\")",
+      "Bash(npx tsx:*)"
     ]
   }
 }

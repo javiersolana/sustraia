@@ -10,7 +10,7 @@ export const Footer = () => (
            <div className="flex items-center gap-3 mb-4">
               <div className="relative w-8 h-8 overflow-hidden rounded-full bg-white/10 p-0.5">
                 <img
-                  src="https://res.cloudinary.com/drszvalpn/image/upload/v1741006579/logo_rax_e73w0d.jpg"
+                  src="/images/logo-rax.jpg"
                   alt="RAX Logo"
                   className="w-full h-full object-cover"
                 />

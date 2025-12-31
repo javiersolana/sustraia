@@ -1,26 +1,26 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
     <div className="relative min-h-screen bg-rax-dark overflow-hidden flex items-center pt-20">
-
+      
       {/* Decorative Background Gradients (The "Aura" of the brand colors) */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rax-purple/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-rax-red/10 rounded-full blur-[100px] mix-blend-screen pointer-events-none" />
       <div className="absolute bottom-0 right-20 w-[300px] h-[300px] bg-rax-green/10 rounded-full blur-[80px] mix-blend-screen pointer-events-none" />
 
       {/* Abstract Lines / Texture Background */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none"
+      <div className="absolute inset-0 opacity-10 pointer-events-none" 
            style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
       </div>
 
       <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
-
+        
         {/* Left: Typography & CTA */}
         <div className="space-y-8">
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
@@ -37,13 +37,13 @@ export const Hero: React.FC = () => {
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-green to-emerald-400">ACCIÓN</span>.<br />
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-purple to-indigo-400">OBJETIVO</span>.
             </h1>
-
+            
             <p className="text-xl text-gray-400 font-light max-w-lg leading-relaxed border-l-4 border-gray-800 pl-6">
               <span className="text-white font-bold">RAX</span> unifica running, salud y oposición en una metodología única. Entrena con precisión, vive con propósito.
             </p>
           </motion.div>
 
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
@@ -72,7 +72,7 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* Right: Dynamic Visual Composition */}
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2 }}
@@ -80,9 +80,9 @@ export const Hero: React.FC = () => {
         >
           {/* Main Character Image - Masked/Styled */}
           <div className="absolute inset-0 z-20">
-            <img
-              src="/images/hero-runner.jpg"
-              alt="Elite Runner"
+            <img 
+              src="https://images.unsplash.com/photo-1552674605-4695231af84f?q=80&w=2787&auto=format&fit=crop" 
+              alt="Elite Runner" 
               className="w-full h-full object-cover object-center rounded-sm mask-image-linear-gradient grayscale hover:grayscale-0 transition-all duration-700"
               style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 90%, 0% 100%)' }}
             />
