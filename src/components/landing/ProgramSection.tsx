@@ -72,18 +72,18 @@ const getTextureClass = (type: ProgramType) => {
 
 export const ProgramSection: React.FC = () => {
   return (
-    <section className="py-24 bg-rax-cream relative">
+    <section className="py-16 bg-rax-cream relative">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-display font-black text-rax-darkText mb-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-display font-black text-rax-darkText mb-4">
             ELIGE TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red via-rax-purple to-rax-green">CAMINO</span>
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            No importa cuál sea tu meta, tenemos la metodología y la pasión para llevarte allí.
+            No importa cuál sea tu meta, tenemos el conocimiento, la metodología y la pasión para llevarte allí.
           </p>
         </div>
 
-        <div className="space-y-32">
+        <div className="space-y-16">
           {programs.map((program, index) => (
             <motion.div
               id={program.id}
@@ -128,7 +128,7 @@ export const ProgramSection: React.FC = () => {
               </div>
 
               {/* Text Content Side */}
-              <div className="w-full md:w-1/2 space-y-8">
+              <div className="w-full md:w-1/2 space-y-6">
                 <div>
                   <h4 className={`text-sm font-bold uppercase tracking-widest mb-4 ${
                     program.type === ProgramType.RUNNING ? 'text-rax-red' :

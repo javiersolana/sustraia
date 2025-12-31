@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
-    <div className="relative min-h-screen bg-rax-cream overflow-hidden flex items-center pt-20">
+    <div className="relative min-h-screen bg-rax-cream overflow-hidden flex items-center pt-16">
 
       {/* Decorative Background Gradients (The "Aura" of the brand colors) */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rax-purple/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
@@ -19,13 +19,13 @@ export const Hero: React.FC = () => {
       <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
 
         {/* Left: Typography & CTA */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-6xl md:text-8xl font-display font-black text-rax-darkText leading-[0.9] tracking-tighter mb-6">
+            <h1 className="text-6xl md:text-8xl font-display font-black text-rax-darkText leading-[0.9] tracking-tighter mb-4">
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red to-orange-600">OBJETIVO</span>.<br />
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-purple to-indigo-400">MOMENTO</span>.
             </h1>
@@ -52,7 +52,7 @@ export const Hero: React.FC = () => {
             </a>
           </motion.div>
 
-          <div className="pt-8 flex items-center gap-8 text-gray-500 font-mono text-xs">
+          <div className="pt-6 flex items-center gap-8 text-gray-500 font-mono text-xs">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-rax-red animate-pulse"></div>
               RUNNING

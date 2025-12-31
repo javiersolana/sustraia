@@ -18,14 +18,14 @@ const experts = [
 
 export const Experts: React.FC = () => {
   return (
-    <section id="experts" className="py-24 bg-rax-cream border-t border-gray-300">
+    <section id="experts" className="py-16 bg-rax-cream border-t border-gray-300">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-display font-black text-rax-darkText mb-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-display font-black text-rax-darkText mb-4">
             EXPERTOS EN HACER <br />
             CUMPLIR TUS <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red via-rax-purple to-rax-green">OBJETIVOS</span>
           </h2>
-          <p className="text-xl text-gray-600 font-light italic">
+          <p className="text-lg text-gray-600 font-light italic">
             "No estás solo. Tienes a un equipo de élite en tu esquina."
           </p>
         </div>
