@@ -9,31 +9,33 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(cuid())
-  email             String             @unique
-  password          String
-  name              String
-  role              UserRole
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  coachId           String?
-  weeklyGoalKm      Float?
-  birthDate         DateTime?
-  maxHeartRate      Int?
-  restingHR         Int?
-  athleteGoals      AthleteGoal[]      @relation("AthleteGoals")
-  coachGoals        AthleteGoal[]      @relation("CoachGoals")
-  athleteNotes      AthleteNote[]      @relation("AthleteNotes")
-  coachNotes        AthleteNote[]      @relation("CoachNotes")
-  completedWorkouts CompletedWorkout[]
-  sentMessages      Message[]          @relation("SentMessages")
-  receivedMessages  Message[]          @relation("ReceivedMessages")
-  stats             Stat[]
-  stravaToken       StravaToken?
-  coach             User?              @relation("CoachAthletes", fields: [coachId], references: [id])
-  athletes          User[]             @relation("CoachAthletes")
-  assignedWorkouts  Workout[]          @relation("AssignedWorkouts")
-  workouts          Workout[]
+  id                    String             @id @default(cuid())
+  email                 String             @unique
+  password              String
+  name                  String
+  role                  UserRole
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  coachId               String?
+  weeklyGoalKm          Float?
+  birthDate             DateTime?
+  maxHeartRate          Int?
+  restingHR             Int?
+  athleteGoals          AthleteGoal[]      @relation("AthleteGoals")
+  coachGoals            AthleteGoal[]      @relation("CoachGoals")
+  athleteNotes          AthleteNote[]      @relation("AthleteNotes")
+  coachNotes            AthleteNote[]      @relation("CoachNotes")
+  completedWorkouts     CompletedWorkout[]
+  sentMessages          Message[]          @relation("SentMessages")
+  receivedMessages      Message[]          @relation("ReceivedMessages")
+  stats                 Stat[]
+  stravaToken           StravaToken?
+  coach                 User?              @relation("CoachAthletes", fields: [coachId], references: [id])
+  athletes              User[]             @relation("CoachAthletes")
+  assignedWorkouts      Workout[]          @relation("AssignedWorkouts")
+  workouts              Workout[]
+  coachTrainingPlans    TrainingPlan[]     @relation("CoachTrainingPlans")
+  athleteTrainingPlans  TrainingPlan[]     @relation("AthleteTrainingPlans")
 
   @@index([email])
   @@index([role])
@@ -173,6 +175,49 @@ model AthleteGoal {
   @@index([athleteId])
   @@index([coachId])
   @@index([date])
+}
+
+model TrainingPlan {
+  id          String          @id @default(cuid())
+  coachId     String
+  athleteId   String
+  date        DateTime
+  title       String
+  description String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  coach       User            @relation("CoachTrainingPlans", fields: [coachId], references: [id], onDelete: Cascade)
+  athlete     User            @relation("AthleteTrainingPlans", fields: [athleteId], references: [id], onDelete: Cascade)
+  blocks      TrainingBlock[]
+
+  @@index([coachId])
+  @@index([athleteId])
+  @@index([date])
+}
+
+model TrainingBlock {
+  id              String        @id @default(cuid())
+  planId          String
+  order           Int
+  type            String
+  durationSeconds Int?
+  distanceMeters  Float?
+  repetitions     Int?
+  restSeconds     Int?
+  paceMin         Float?
+  paceMax         Float?
+  hrMin           Int?
+  hrMax           Int?
+  targetType      String?
+  targetMin       Float?
+  targetMax       Float?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  plan            TrainingPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@index([order])
 }
 
 enum UserRole {

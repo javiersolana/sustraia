@@ -44,14 +44,6 @@ export const createPlan: RequestHandler = async (req, res, next) => {
             return;
         }
 
-        // 🔒 SAFE GUARD: TrainingPlan model does not exist yet in Prisma
-        if (!(prisma as any).trainingPlan) {
-            res.status(501).json({
-                error: 'Training plans feature not yet available. Use Workouts instead.'
-            });
-            return;
-        }
-
         // Verify athlete exists and belongs to this coach
         const athlete = await prisma.user.findFirst({
             where: {
@@ -67,7 +59,7 @@ export const createPlan: RequestHandler = async (req, res, next) => {
         }
 
         // Create plan with blocks in a transaction
-        const plan = await (prisma as any).trainingPlan.create({
+        const plan = await prisma.trainingPlan.create({
             data: {
                 coachId,
                 athleteId,
@@ -118,12 +110,6 @@ export const getPlans: RequestHandler = async (req, res, next) => {
     const role = req.user!.role;
     const { athleteId, startDate, endDate } = req.query;
 
-    // 🔒 SAFE GUARD:
-    // TrainingPlan model does not exist yet in Prisma
-    if (!(prisma as any).trainingPlan) {
-      return res.json([]);
-    }
-
     let where: any = {};
 
     if (role === 'COACH') {
@@ -147,7 +133,7 @@ export const getPlans: RequestHandler = async (req, res, next) => {
       }
     }
 
-    const plans = await (prisma as any).trainingPlan.findMany({
+    const plans = await prisma.trainingPlan.findMany({
       where,
       include: {
         blocks: {
@@ -178,13 +164,7 @@ export const getPlanById: RequestHandler = async (req, res, next) => {
         const userId = req.user!.userId;
         const role = req.user!.role;
 
-        // 🔒 SAFE GUARD
-        if (!(prisma as any).trainingPlan) {
-            res.status(501).json({ error: 'Training plans not available' });
-            return;
-        }
-
-        const plan = await (prisma as any).trainingPlan.findUnique({
+        const plan = await prisma.trainingPlan.findUnique({
             where: { id },
             include: {
                 blocks: {
@@ -229,14 +209,8 @@ export const updatePlan: RequestHandler = async (req, res, next) => {
         const { date, title, description, blocks } = req.body;
         const coachId = req.user!.userId;
 
-        // 🔒 SAFE GUARD
-        if (!(prisma as any).trainingPlan) {
-            res.status(501).json({ error: 'Training plans not available' });
-            return;
-        }
-
         // Verify ownership
-        const existingPlan = await (prisma as any).trainingPlan.findFirst({
+        const existingPlan = await prisma.trainingPlan.findFirst({
             where: { id, coachId },
         });
 
@@ -248,12 +222,12 @@ export const updatePlan: RequestHandler = async (req, res, next) => {
         // Update plan and replace blocks
         const plan = await prisma.$transaction(async (tx) => {
             // Delete existing blocks
-            await (tx as any).trainingBlock.deleteMany({
+            await tx.trainingBlock.deleteMany({
                 where: { planId: id },
             });
 
             // Update plan and create new blocks
-            return (tx as any).trainingPlan.update({
+            return tx.trainingPlan.update({
                 where: { id },
                 data: {
                     date: date ? new Date(date) : undefined,
@@ -303,14 +277,8 @@ export const deletePlan: RequestHandler = async (req, res, next) => {
         const { id } = req.params;
         const coachId = req.user!.userId;
 
-        // 🔒 SAFE GUARD
-        if (!(prisma as any).trainingPlan) {
-            res.status(501).json({ error: 'Training plans not available' });
-            return;
-        }
-
         // Verify ownership
-        const existingPlan = await (prisma as any).trainingPlan.findFirst({
+        const existingPlan = await prisma.trainingPlan.findFirst({
             where: { id, coachId },
         });
 
@@ -319,7 +287,7 @@ export const deletePlan: RequestHandler = async (req, res, next) => {
             return;
         }
 
-        await (prisma as any).trainingPlan.delete({
+        await prisma.trainingPlan.delete({
             where: { id },
         });
 
