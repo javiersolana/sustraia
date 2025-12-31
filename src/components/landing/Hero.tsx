@@ -25,13 +25,6 @@ export const Hero: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="flex items-center gap-3 mb-6">
-               <div className="h-1 w-12 bg-rax-red"></div>
-               <div className="h-1 w-12 bg-rax-green"></div>
-               <div className="h-1 w-12 bg-rax-purple"></div>
-               <span className="text-gray-400 font-mono text-sm tracking-widest uppercase">Performance Platform</span>
-            </div>
-
             <h1 className="text-6xl md:text-8xl font-display font-black text-rax-darkText leading-[0.9] tracking-tighter mb-6">
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red to-orange-600">OBJETIVO</span>.<br />
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-purple to-indigo-400">MOMENTO</span>.
