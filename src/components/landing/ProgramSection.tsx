@@ -72,14 +72,14 @@ const getTextureClass = (type: ProgramType) => {
 
 export const ProgramSection: React.FC = () => {
   return (
-    <section className="py-24 bg-rax-dark relative">
+    <section className="py-24 bg-rax-cream relative">
       <div className="container mx-auto px-6">
         <div className="text-center mb-20">
-          <h2 className="text-4xl md:text-5xl font-display font-black text-white mb-6">
+          <h2 className="text-4xl md:text-5xl font-display font-black text-rax-darkText mb-6">
             ELIGE TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red via-rax-purple to-rax-green">CAMINO</span>
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            No importa cuál sea tu meta, tenemos la metodología científica y la pasión para llevarte allí.
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            No importa cuál sea tu meta, tenemos la metodología y la pasión para llevarte allí.
           </p>
         </div>
 
@@ -136,14 +136,14 @@ export const ProgramSection: React.FC = () => {
                   }`}>
                     Metodología RAX
                   </h4>
-                  <h3 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-6">
+                  <h3 className="text-3xl md:text-4xl font-bold text-rax-darkText leading-tight mb-6">
                     {program.description}
                   </h3>
                 </div>
 
                 <ul className="space-y-4">
                   {program.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-4 text-gray-300">
+                    <li key={idx} className="flex items-center gap-4 text-gray-700">
                       <CheckCircle2 size={20} className={
                         program.type === ProgramType.RUNNING ? 'text-rax-red' :
                         program.type === ProgramType.HEALTH ? 'text-rax-green' : 'text-rax-purple'
@@ -153,12 +153,17 @@ export const ProgramSection: React.FC = () => {
                   ))}
                 </ul>
 
-                <button className={`mt-8 px-8 py-4 rounded-sm font-bold text-white flex items-center gap-3 transition-all hover:gap-5 ${
+                <a
+                  href="https://wa.me/34674561505"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`mt-8 px-8 py-4 rounded-sm font-bold text-white flex items-center gap-3 transition-all hover:gap-5 ${
                     program.type === ProgramType.RUNNING ? 'bg-rax-red hover:bg-red-700' :
                     program.type === ProgramType.HEALTH ? 'bg-rax-green hover:bg-emerald-700' : 'bg-rax-purple hover:bg-purple-800'
-                }`}>
+                  }`}
+                >
                   EMPEZAR AHORA <ChevronRight size={20} />
-                </button>
+                </a>
               </div>
             </motion.div>
           ))}

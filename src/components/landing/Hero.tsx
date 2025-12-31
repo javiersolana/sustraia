@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
-    <div className="relative min-h-screen bg-rax-dark overflow-hidden flex items-center pt-20">
+    <div className="relative min-h-screen bg-rax-cream overflow-hidden flex items-center pt-20">
 
       {/* Decorative Background Gradients (The "Aura" of the brand colors) */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-rax-purple/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" />
@@ -32,14 +32,13 @@ export const Hero: React.FC = () => {
                <span className="text-gray-400 font-mono text-sm tracking-widest uppercase">Performance Platform</span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-display font-black text-white leading-[0.9] tracking-tighter mb-6">
-              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red to-orange-600">RAÍZ</span>.<br />
-              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-green to-emerald-400">ACCIÓN</span>.<br />
-              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-purple to-indigo-400">OBJETIVO</span>.
+            <h1 className="text-6xl md:text-8xl font-display font-black text-rax-darkText leading-[0.9] tracking-tighter mb-6">
+              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red to-orange-600">OBJETIVO</span>.<br />
+              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-purple to-indigo-400">MOMENTO</span>.
             </h1>
 
-            <p className="text-xl text-gray-400 font-light max-w-lg leading-relaxed border-l-4 border-gray-800 pl-6">
-              <span className="text-white font-bold">RAX</span> unifica running, salud y oposición en una metodología única. Entrena con precisión, vive con propósito.
+            <p className="text-xl text-gray-600 font-light max-w-lg leading-relaxed border-l-4 border-gray-300 pl-6">
+              <span className="text-rax-darkText font-bold">RAX</span> unifica running, salud y oposición en una metodología única.
             </p>
           </motion.div>
 
@@ -49,10 +48,15 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-wrap gap-4"
           >
-            <button className="bg-white text-rax-dark px-8 py-4 font-black text-lg tracking-wide hover:bg-gray-200 transition-colors flex items-center gap-2 group">
+            <a
+              href="https://wa.me/34674561505"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-rax-darkText text-white px-8 py-4 font-black text-lg tracking-wide hover:bg-gray-800 transition-colors flex items-center gap-2 group"
+            >
               EMPEZAR AHORA
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+            </a>
           </motion.div>
 
           <div className="pt-8 flex items-center gap-8 text-gray-500 font-mono text-xs">

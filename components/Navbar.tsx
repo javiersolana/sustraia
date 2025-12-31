@@ -25,21 +25,21 @@ export const Navbar = () => {
     <nav
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-rax-dark/95 backdrop-blur-md py-3 shadow-lg border-b border-gray-800'
-          : 'bg-rax-dark/80 backdrop-blur-sm py-6'
+          ? 'bg-rax-cream/95 backdrop-blur-md py-3 shadow-lg border-b border-gray-300'
+          : 'bg-rax-cream/90 backdrop-blur-sm py-6'
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo Area */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 overflow-hidden rounded-full bg-white/10 p-1 transition-transform group-hover:scale-105">
+          <div className="relative w-10 h-10 overflow-hidden rounded-full bg-gray-200 p-1 transition-transform group-hover:scale-105">
             <img
-              src="/images/logo-rax.jpg"
+              src="/images/logo-rax.png"
               alt="RAX Logo"
               className="w-full h-full object-cover"
             />
           </div>
-          <span className="text-2xl font-display font-black tracking-tighter text-white">
+          <span className="text-2xl font-display font-black tracking-tighter text-rax-darkText">
             RAX
           </span>
         </Link>
@@ -50,13 +50,13 @@ export const Navbar = () => {
             <a
               key={link.name}
               href={link.href}
-              className="text-sm font-semibold text-gray-300 hover:text-white transition-colors uppercase tracking-widest"
+              className="text-sm font-semibold text-gray-600 hover:text-rax-darkText transition-colors uppercase tracking-widest"
             >
               {link.name}
             </a>
           ))}
           <Link to="/login">
-            <button className="bg-white text-rax-dark px-5 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition-colors">
+            <button className="bg-rax-darkText text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-gray-800 transition-colors">
               EMPEZAR
             </button>
           </Link>
@@ -64,7 +64,7 @@ export const Navbar = () => {
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden text-white"
+          className="md:hidden text-rax-darkText"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -73,12 +73,12 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-rax-dark border-t border-gray-800 p-6 flex flex-col space-y-4 shadow-2xl">
+        <div className="md:hidden absolute top-full left-0 w-full bg-rax-cream border-t border-gray-300 p-6 flex flex-col space-y-4 shadow-2xl">
           {navLinks.map((link) => (
             <a
               key={link.name}
               href={link.href}
-              className="text-lg font-bold text-gray-200"
+              className="text-lg font-bold text-rax-darkText"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.name}
