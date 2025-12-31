@@ -16,7 +16,7 @@ export const Hero: React.FC = () => {
            style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
       </div>
 
-      <div className="container mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
+      <div className="container mx-auto px-6 grid md:grid-cols-2 gap-8 items-center relative z-10">
 
         {/* Left: Typography & CTA */}
         <div className="space-y-6">
