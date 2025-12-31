@@ -1,40 +1,35 @@
 import React from 'react';
-import { Instagram } from 'lucide-react';
+import { Instagram, Twitter, Mail } from 'lucide-react';
 
 export const Footer = () => (
-  <footer className="bg-sustraia-base pt-24 pb-12 border-t border-sustraia-text/5">
+  <footer className="bg-black text-white py-12 border-t border-gray-900">
     <div className="container mx-auto px-6">
-      <div className="grid md:grid-cols-4 gap-12 mb-20">
-        <div className="col-span-2">
-          <h2 className="font-display font-black text-3xl mb-6">SUSTRAIA.</h2>
-          <p className="text-sustraia-gray max-w-sm">
-            Plataforma de entrenamiento nacida en San Sebastián. Expertos en preparación de Oposiciones y Rendimiento Deportivo.
-          </p>
-        </div>
-        <div>
-          <h4 className="font-bold mb-6 text-sm uppercase tracking-wider">Enlaces</h4>
-          <ul className="space-y-4 text-sustraia-gray text-sm">
-            <li><a href="#" className="hover:text-sustraia-accent transition-colors">Oposiciones</a></li>
-            <li><a href="#" className="hover:text-sustraia-accent transition-colors">Entrenamiento Personal</a></li>
-            <li><a href="#" className="hover:text-sustraia-accent transition-colors">Sobre Nosotros</a></li>
-            <li><a href="#" className="hover:text-sustraia-accent transition-colors">Contacto</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="font-bold mb-6 text-sm uppercase tracking-wider">Social</h4>
-          <div className="flex gap-4">
-             <a href="#" className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-sustraia-accent hover:text-white transition-all shadow-sm">
-                <Instagram size={20} />
-             </a>
-          </div>
-        </div>
-      </div>
+      <div className="flex flex-col md:flex-row justify-between items-center">
 
-      <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-sustraia-text/5 text-sm text-sustraia-gray">
-        <div>© 2024 Sustraia Performance.</div>
-        <div className="flex gap-6 mt-4 md:mt-0">
-          <a href="#">Aviso Legal</a>
-          <a href="#">Privacidad</a>
+        <div className="mb-8 md:mb-0 flex flex-col items-center md:items-start">
+           <div className="flex items-center gap-3 mb-4">
+              <div className="relative w-8 h-8 overflow-hidden rounded-full bg-white/10 p-0.5">
+                <img
+                  src="https://res.cloudinary.com/drszvalpn/image/upload/v1741006579/logo_rax_e73w0d.jpg"
+                  alt="RAX Logo"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="text-xl font-display font-black tracking-tighter">RAX</span>
+           </div>
+           <p className="text-gray-500 text-sm">© 2024 RAX Performance. Todos los derechos reservados.</p>
+        </div>
+
+        <div className="flex space-x-6">
+          <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <Instagram size={24} />
+          </a>
+          <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <Twitter size={24} />
+          </a>
+          <a href="#" className="text-gray-400 hover:text-white transition-colors">
+            <Mail size={24} />
+          </a>
         </div>
       </div>
     </div>

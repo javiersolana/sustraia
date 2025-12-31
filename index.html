@@ -3,30 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUSTRAIA | Hybrid Coaching</title>
+    <title>RAX - Tu Objetivo. Tu Momento.</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    },
                     colors: {
+                        rax: {
+                            red: '#C23B22', // Tartanish red
+                            green: '#2E8B57', // Nature/Health
+                            purple: '#6A0DAD', // Objective/X
+                            dark: '#0F172A',
+                            light: '#F8FAFC'
+                        },
+                        // Keep sustraia colors for dashboard compatibility
                         sustraia: {
-                            base: '#F5F5F7', // Cool light grey (More tech/clean than bone)
+                            base: '#F5F5F7',
                             paper: '#FFFFFF',
-                            text: '#111111', // Almost black
+                            text: '#111111',
                             gray: '#666666',
                             lightGray: '#E5E5E5',
-                            accent: '#0033FF', // Klein Blue / Electric Blue (Professional & Tech)
+                            accent: '#0033FF',
                             accentHover: '#0022CC',
                             secondary: '#1A1A1A'
                         }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Archivo', 'sans-serif'],
                     },
                     letterSpacing: {
                         tighter: '-0.04em',
@@ -36,6 +44,27 @@
             }
         }
     </script>
+    <style>
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+        .tartan-pattern {
+            background-color: #C23B22;
+            background-image:
+                linear-gradient(90deg, rgba(0,0,0,.1) 50%, transparent 50%),
+                linear-gradient(rgba(0,0,0,.1) 50%, transparent 50%);
+            background-size: 20px 20px;
+        }
+        .mountain-pattern {
+            background-color: #2E8B57;
+            background-image: radial-gradient(circle at 50% 120%, rgba(0,0,0,0.3) 20%, transparent 60%);
+        }
+        .target-pattern {
+            background-color: #6A0DAD;
+            background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 10px);
+        }
+    </style>
 <script type="importmap">
 {
   "imports": {
