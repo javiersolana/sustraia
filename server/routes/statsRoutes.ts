@@ -7,6 +7,7 @@ import {
   getAthleteWorkouts,
   getActivity,
   getActivities,
+  getCoachAlerts,
 } from '../controllers/statsController';
 import { authenticate, requireRole } from '../middleware/auth';
 
@@ -26,6 +27,9 @@ router.get('/dashboard', requireRole('ATLETA'), getDashboard);
 
 // Get coach dashboard
 router.get('/coach-dashboard', requireRole('COACH'), getCoachDashboard);
+
+// Get coach alerts (low compliance, no activity, etc)
+router.get('/coach-alerts', requireRole('COACH'), getCoachAlerts);
 
 // Get specific athlete's completed workouts (for coach)
 router.get('/athlete/:athleteId/workouts', requireRole('COACH'), getAthleteWorkouts);

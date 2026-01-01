@@ -5,6 +5,7 @@ import {
   getMessages,
   markAsRead,
   getUnreadCount,
+  getRecentMessages,
   sendMessageValidation,
 } from '../controllers/messageController';
 import { authenticate } from '../middleware/auth';
@@ -19,6 +20,9 @@ router.post('/', sendMessageValidation, sendMessage);
 
 // Get conversations
 router.get('/conversations', getConversations);
+
+// Get recent messages (for dashboard widgets)
+router.get('/recent', getRecentMessages);
 
 // Get messages with specific user
 router.get('/with/:userId', getMessages);

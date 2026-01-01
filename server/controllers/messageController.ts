@@ -280,3 +280,52 @@ export async function getUnreadCount(req: Request, res: Response) {
     res.status(500).json({ error: 'Failed to get unread count' });
   }
 }
+
+/**
+ * Get recent messages (for coach dashboard)
+ */
+export async function getRecentMessages(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const limit = Math.min(parseInt(req.query.limit as string) || 5, 20);
+
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { fromId: req.user.userId },
+          { toId: req.user.userId },
+        ],
+      },
+      include: {
+        from: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+        to: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: limit,
+    });
+
+    res.json({ messages });
+  } catch (error) {
+    console.error('Get recent messages error:', error);
+    res.status(500).json({ error: 'Failed to fetch recent messages' });
+  }
+}

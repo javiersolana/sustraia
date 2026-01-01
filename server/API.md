@@ -277,6 +277,49 @@ Mark message as read.
 ### Get Unread Count
 `GET /messages/unread/count` 🔒
 
+Get count of unread messages for authenticated user.
+
+**Response:** `200 OK`
+```json
+{
+  "count": 5
+}
+```
+
+### Get Recent Messages
+`GET /messages/recent` 🔒
+
+Get recent messages for authenticated user (for dashboard widgets).
+
+**Query Parameters:**
+- `limit` (optional): Number of messages to return (default: 5, max: 20)
+
+**Response:** `200 OK`
+```json
+{
+  "messages": [
+    {
+      "id": "clxxx...",
+      "fromId": "clxxx...",
+      "toId": "clxxx...",
+      "content": "Hola, ¿cómo vas con el entreno de hoy?",
+      "read": false,
+      "createdAt": "2025-12-27T10:30:00Z",
+      "from": {
+        "id": "clxxx...",
+        "name": "Coach John",
+        "role": "COACH"
+      },
+      "to": {
+        "id": "clxxx...",
+        "name": "Athlete Jane",
+        "role": "ATLETA"
+      }
+    }
+  ]
+}
+```
+
 Get unread message count.
 
 **Response:** `200 OK`
@@ -473,6 +516,69 @@ Get comprehensive dashboard data for coach.
   ],
   "recentWorkouts": [ /* workouts created by coach */ ],
   "unreadMessages": 5
+}
+```
+
+### Get Coach Alerts
+`GET /stats/coach-alerts` 🔒 (COACH only)
+
+Get alerts for coach (low compliance athletes, no activity, etc).
+
+**Response:** `200 OK`
+```json
+{
+  "alerts": [
+    {
+      "id": "athlete123-low-compliance",
+      "type": "low_compliance",
+      "athleteId": "clxxx...",
+      "athleteName": "John Doe",
+      "message": "John Doe solo completó 1 de 4 entrenos esta semana",
+      "detail": "Compliance: 25%",
+      "createdAt": "2026-01-01T12:00:00Z"
+    },
+    {
+      "id": "athlete456-no-activity",
+      "type": "no_activity",
+      "athleteId": "clyyy...",
+      "athleteName": "Jane Smith",
+      "message": "Jane Smith no ha registrado actividad en 7 días",
+      "detail": "Considera contactar al atleta",
+      "createdAt": "2026-01-01T12:00:00Z"
+    }
+  ]
+}
+```
+
+**Alert Types:**
+- `low_compliance`: Athlete completed < 50% of weekly workouts
+- `no_activity`: No workouts registered in last 7 days
+- `missed_workout`: Specific scheduled workout was missed
+
+---
+
+## User Endpoints
+
+### Get My Coach
+`GET /user/my-coach` 🔒 (ATLETA only)
+
+Get coach information for authenticated athlete.
+
+**Response:** `200 OK`
+```json
+{
+  "coach": {
+    "id": "clxxx...",
+    "name": "Coach Name",
+    "email": "coach@example.com"
+  }
+}
+```
+
+**Response (no coach assigned):** `200 OK`
+```json
+{
+  "coach": null
 }
 ```
 

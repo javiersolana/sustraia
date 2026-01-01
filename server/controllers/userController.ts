@@ -40,3 +40,46 @@ export async function updateWeeklyGoal(req: Request, res: Response) {
         res.status(500).json({ error: 'Failed to update weekly goal' });
     }
 }
+
+/**
+ * Get my coach info (for athletes)
+ * Endpoint seguro que permite a atletas ver info básica de su coach
+ */
+export async function getMyCoach(req: Request, res: Response) {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const userId = req.user.userId;
+
+        // Get user with coach relation
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                coachId: true,
+                coach: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (!user.coach) {
+            return res.json({ coach: null });
+        }
+
+        res.json({ coach: user.coach });
+    } catch (error) {
+        console.error('Get my coach error:', error);
+        res.status(500).json({ error: 'Failed to get coach info' });
+    }
+}

@@ -42,33 +42,16 @@ const AthleteDashboard: React.FC = () => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const [dashboardData, profileData] = await Promise.all([
+        const [dashboardData, profileData, coachResponse] = await Promise.all([
           api.stats.getDashboard(),
           api.auth.getProfile(),
+          api.user.getMyCoach(),
         ]);
-
-        // Get coach info if user has one
-        let coachData = null;
-        if ((profileData.user as any).coachId) {
-          // TODO: Implement a safe endpoint to get coach info without admin rights
-          // For now, we skip this to avoid 403 errors
-          /*
-          try {
-            const coachResponse = await api.admin.getAllUsers();
-            const coach = coachResponse.users.find(u => u.id === (profileData.user as any).coachId);
-            if (coach) {
-              coachData = { id: coach.id, name: coach.name, email: coach.email };
-            }
-          } catch (err) {
-            console.log('Could not fetch coach info:', err);
-          }
-          */
-        }
 
         setData({
           ...dashboardData,
           user: profileData.user,
-          coach: coachData,
+          coach: coachResponse.coach,
         });
 
         // Fetch training plans for athlete

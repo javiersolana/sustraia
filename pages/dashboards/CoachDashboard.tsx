@@ -40,7 +40,17 @@ interface CoachDashboardData {
   }>;
   recentWorkouts: Workout[];
   unreadMessages: number;
-  alerts: Alert[];
+  alerts?: Alert[];
+  recentMessages?: Array<{
+    id: string;
+    fromId: string;
+    toId: string;
+    content: string;
+    read: boolean;
+    createdAt: string;
+    from?: { id: string; name: string; role: string };
+    to?: { id: string; name: string; role: string };
+  }>;
 }
 
 const CoachDashboard: React.FC = () => {
@@ -54,8 +64,17 @@ const CoachDashboard: React.FC = () => {
     const fetchDashboard = async () => {
       try {
         setLoading(true);
-        const dashboardData = await api.stats.getCoachDashboard();
-        setData(dashboardData);
+        const [dashboardData, alertsData, messagesData] = await Promise.all([
+          api.stats.getCoachDashboard(),
+          api.stats.getCoachAlerts().catch(() => ({ alerts: [] })),
+          api.messages.getRecent(5).catch(() => ({ messages: [] })),
+        ]);
+
+        setData({
+          ...dashboardData,
+          alerts: alertsData.alerts,
+          recentMessages: messagesData.messages,
+        });
         setError(null);
       } catch (err: any) {
         console.error('Coach dashboard error:', err);

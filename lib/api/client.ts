@@ -226,6 +226,11 @@ class ApiClient {
         method: 'PUT',
         body: JSON.stringify({ weeklyGoalKm }),
       }),
+
+    getMyCoach: () =>
+      this.request<{ coach: { id: string; name: string; email: string } | null }>(
+        '/user/my-coach'
+      ),
   };
 
   // Workout endpoints
@@ -287,6 +292,11 @@ class ApiClient {
 
     getUnreadCount: () =>
       this.request<{ count: number }>('/messages/unread/count'),
+
+    getRecent: (limit = 5) =>
+      this.request<{ messages: Message[] }>(
+        `/messages/recent?limit=${limit}`
+      ),
   };
 
   // Strava endpoints
@@ -426,6 +436,19 @@ class ApiClient {
 
     getActivity: (id: string) =>
       this.request<{ activity: CompletedWorkout }>(`/stats/activities/${id}`),
+
+    getCoachAlerts: () =>
+      this.request<{
+        alerts: Array<{
+          id: string;
+          type: 'missed_workout' | 'low_compliance' | 'no_activity';
+          athleteId: string;
+          athleteName: string;
+          message: string;
+          detail: string;
+          createdAt: string;
+        }>;
+      }>('/stats/coach-alerts'),
   };
 
   // Admin endpoints

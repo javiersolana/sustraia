@@ -644,3 +644,109 @@ export async function getActivities(req: Request, res: Response) {
     res.status(500).json({ error: 'Failed to fetch activities' });
   }
 }
+
+/**
+ * Get alerts for coach (low compliance, missed workouts, etc)
+ */
+export async function getCoachAlerts(req: Request, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    if (req.user.role !== 'COACH') {
+      return res.status(403).json({ error: 'Only coaches can access alerts' });
+    }
+
+    const coachId = req.user.userId;
+
+    // Get all athletes for this coach
+    const athletes = await prisma.user.findMany({
+      where: {
+        coachId,
+        role: 'ATLETA',
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    const alerts: Array<{
+      id: string;
+      type: 'missed_workout' | 'low_compliance' | 'no_activity';
+      athleteId: string;
+      athleteName: string;
+      message: string;
+      detail: string;
+      createdAt: string;
+    }> = [];
+
+    // Calculate compliance for each athlete
+    for (const athlete of athletes) {
+      // Get weekly stats
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : -(dayOfWeek - 1);
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + mondayOffset);
+      weekStart.setHours(0, 0, 0, 0);
+
+      const weeklyWorkouts = await prisma.completedWorkout.count({
+        where: {
+          userId: athlete.id,
+          completedAt: {
+            gte: weekStart,
+          },
+        },
+      });
+
+      const weeklyGoal = 4; // Default target: 4 workouts/week
+      const compliance = (weeklyWorkouts / weeklyGoal) * 100;
+
+      // Alert: Low compliance (< 50%)
+      if (compliance < 50) {
+        alerts.push({
+          id: `${athlete.id}-low-compliance`,
+          type: 'low_compliance',
+          athleteId: athlete.id,
+          athleteName: athlete.name,
+          message: `${athlete.name} solo completó ${weeklyWorkouts} de ${weeklyGoal} entrenos esta semana`,
+          detail: `Compliance: ${compliance.toFixed(0)}%`,
+          createdAt: new Date().toISOString(),
+        });
+      }
+
+      // Alert: No activity in last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const recentWorkouts = await prisma.completedWorkout.count({
+        where: {
+          userId: athlete.id,
+          completedAt: {
+            gte: sevenDaysAgo,
+          },
+        },
+      });
+
+      if (recentWorkouts === 0) {
+        alerts.push({
+          id: `${athlete.id}-no-activity`,
+          type: 'no_activity',
+          athleteId: athlete.id,
+          athleteName: athlete.name,
+          message: `${athlete.name} no ha registrado actividad en 7 días`,
+          detail: 'Considera contactar al atleta',
+          createdAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    res.json({ alerts });
+  } catch (error) {
+    console.error('Get coach alerts error:', error);
+    res.status(500).json({ error: 'Failed to fetch alerts' });
+  }
+}
