@@ -4,6 +4,7 @@ import { prisma } from '../config/prisma';
 import { UserRole } from '@prisma/client';
 import { hashPassword, comparePassword } from '../utils/password';
 import { generateToken } from '../utils/jwt';
+import { emailService } from '../services/emailService';
 
 // Validation rules
 export const registerValidation = [
@@ -63,6 +64,10 @@ export async function register(req: Request, res: Response) {
       email: user.email,
       role: user.role,
     });
+
+    // Send welcome email (non-blocking)
+    emailService.sendWelcomeEmail(user.name, user.email, user.role as 'ATLETA' | 'COACH')
+      .catch(err => console.error('Failed to send welcome email:', err));
 
     res.status(201).json({
       user,

@@ -36,6 +36,7 @@ model User {
   workouts              Workout[]
   coachTrainingPlans    TrainingPlan[]     @relation("CoachTrainingPlans")
   athleteTrainingPlans  TrainingPlan[]     @relation("AthleteTrainingPlans")
+  passwordResetTokens   PasswordResetToken[]
 
   @@index([email])
   @@index([role])
@@ -244,4 +245,18 @@ enum WorkoutLabel {
   RODAJE
   CUESTAS
   OTRO
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
 }

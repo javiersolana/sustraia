@@ -118,9 +118,9 @@ const Login: React.FC = () => {
                 <input type="checkbox" className="w-4 h-4 rounded border-sustraia-light-gray text-sustraia-accent focus:ring-sustraia-accent" />
                 <span className="text-sustraia-gray font-medium">Recordarme</span>
               </label>
-              <a href="#" className="text-sustraia-accent font-bold hover:underline">
+              <Link to="/request-reset" className="text-sustraia-accent font-bold hover:underline">
                 ¿Olvidaste tu contraseña?
-              </a>
+              </Link>
             </div>
 
             <motion.button

@@ -91,6 +91,81 @@ Get current user profile.
 }
 ```
 
+### Request Password Reset
+`POST /auth/request-reset`
+
+Request a password reset token. Sends an email with reset link.
+
+**Request Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Si el email existe, recibirás un enlace de restablecimiento"
+}
+```
+
+**Notes:**
+- Always returns success to prevent email enumeration
+- Token expires in 1 hour
+- Invalidates previous tokens for the same user
+
+### Verify Reset Token
+`GET /auth/verify-reset-token/:token`
+
+Verify if a password reset token is valid.
+
+**Response:** `200 OK`
+```json
+{
+  "valid": true,
+  "email": "user@example.com",
+  "expiresAt": "2025-12-27T..."
+}
+```
+
+**Error Response:** `400 Bad Request`
+```json
+{
+  "valid": false,
+  "error": "Token expirado"
+}
+```
+
+### Reset Password
+`POST /auth/reset-password`
+
+Reset password using a valid token.
+
+**Request Body:**
+```json
+{
+  "token": "abc123...",
+  "newPassword": "newPassword123"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "success": true,
+  "message": "Contraseña actualizada correctamente"
+}
+```
+
+**Error Response:** `400 Bad Request`
+```json
+{
+  "error": "Token inválido o expirado"
+}
+```
+
 ---
 
 ## Workout Endpoints

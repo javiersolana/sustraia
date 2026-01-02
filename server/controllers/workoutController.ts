@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/prisma';
+import { emailService } from '../services/emailService';
 
 // Validation rules
 export const createWorkoutValidation = [
@@ -59,8 +60,31 @@ export async function createWorkout(req: Request, res: Response) {
             email: true,
           },
         },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
+
+    // Send email notification if workout is assigned to an athlete
+    if (assignedTo && workout.athlete) {
+      emailService.sendWorkoutAssignedEmail(
+        workout.athlete.name,
+        workout.athlete.email,
+        workout.creator.name,
+        {
+          title: workout.title,
+          date: workout.date,
+          type: workout.type,
+          description: workout.description || undefined,
+          distance: workout.distance || undefined,
+          duration: workout.duration || undefined,
+        }
+      ).catch(err => console.error('Failed to send workout assigned email:', err));
+    }
 
     res.status(201).json({ workout });
   } catch (error) {

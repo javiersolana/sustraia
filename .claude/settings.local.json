@@ -33,7 +33,8 @@
       "Bash(npx tsx:*)",
       "Bash(npm run test:*)",
       "Bash(dir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(git push:*)"
     ]
   }
 }

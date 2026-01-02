@@ -128,7 +128,7 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
 
     const renderDayCell = (date: Date | null, index: number) => {
         if (!date) {
-            return <div key={index} className="p-2 min-h-[100px] bg-gray-50/50" />;
+            return <div key={index} className="p-2 min-h-[80px] md:min-h-[100px] bg-gray-50/50" />;
         }
 
         const dayEvents = getEventsForDate(date);
@@ -152,22 +152,22 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
                 animate={{ opacity: 1 }}
                 transition={{ delay: index * 0.02 }}
                 className={`
-          p-2 min-h-[100px] border-b border-r border-gray-100 cursor-pointer transition-colors
+          p-1.5 md:p-2 min-h-[80px] md:min-h-[100px] border-b border-r border-gray-100 cursor-pointer transition-colors
           ${isTodayDate ? 'bg-blue-50/50 ring-1 ring-inset ring-sustraia-accent' : 'hover:bg-gray-50'}
         `}
                 onClick={() => onDayClick?.(date)}
             >
                 <div className="flex justify-between items-start">
                     <span className={`
-            text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full
+            text-xs md:text-sm font-medium w-6 h-6 md:w-7 md:h-7 flex items-center justify-center rounded-full
             ${isTodayDate ? 'bg-sustraia-accent text-white' : 'text-gray-700'}
           `}>
                         {date.getDate()}
                     </span>
                 </div>
 
-                <div className="mt-1 space-y-1">
-                    {dayEvents.slice(0, 3).map((event) => {
+                <div className="mt-1 space-y-0.5 md:space-y-1">
+                    {dayEvents.slice(0, viewMode === 'month' ? 2 : 3).map((event) => {
                         const summary = formatEventSummary(event);
                         return (
                             <button
@@ -177,21 +177,21 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
                                     onEventClick?.(event);
                                 }}
                                 className={`
-                w-full text-left text-xs px-2 py-1 rounded transition-colors
+                w-full text-left text-[10px] md:text-xs px-1 md:px-2 py-0.5 md:py-1 rounded transition-colors
                 ${event.type === 'plan'
                                         ? 'bg-sustraia-accent/10 text-sustraia-accent hover:bg-sustraia-accent/20'
                                         : 'bg-green-100 text-green-700 hover:bg-green-200'
                                     }
               `}
                             >
-                                <span className="block truncate font-medium">{event.title}</span>
-                                {summary && <span className="block text-[10px] opacity-75">{summary}</span>}
+                                <span className="block truncate font-medium leading-tight">{event.title}</span>
+                                {summary && <span className="hidden md:block text-[10px] opacity-75">{summary}</span>}
                             </button>
                         );
                     })}
-                    {dayEvents.length > 3 && (
-                        <span className="text-xs text-gray-500 px-2">
-                            +{dayEvents.length - 3} más
+                    {dayEvents.length > (viewMode === 'month' ? 2 : 3) && (
+                        <span className="text-[10px] md:text-xs text-gray-500 px-1 md:px-2">
+                            +{dayEvents.length - (viewMode === 'month' ? 2 : 3)}
                         </span>
                     )}
                 </div>
@@ -200,31 +200,32 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
     };
 
     return (
-        <div className={`bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${className}`}>
+        <div className={`bg-white rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${className}`}>
             {/* Header */}
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <h3 className="font-display font-bold text-xl">
+            <div className="p-3 md:p-4 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 md:gap-4 w-full sm:w-auto">
+                    <h3 className="font-display font-bold text-base md:text-xl truncate">
                         {viewMode === 'month'
                             ? `${MONTHS_ES[month]} ${year}`
-                            : `Semana del ${getWeekDays()[0].getDate()} ${MONTHS_ES[getWeekDays()[0].getMonth()]}`
+                            : `Semana ${getWeekDays()[0].getDate()} ${MONTHS_ES[getWeekDays()[0].getMonth()]}`
                         }
                     </h3>
                     <button
                         onClick={goToToday}
-                        className="text-sm font-medium text-sustraia-accent hover:underline"
+                        className="text-xs md:text-sm font-medium text-sustraia-accent hover:underline whitespace-nowrap"
                     >
                         Hoy
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    {/* View toggle */}
-                    <div className="flex bg-gray-100 rounded-full p-1">
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    {/* View toggle - Hidden on mobile */}
+                    <div className="hidden sm:flex bg-gray-100 rounded-full p-1">
                         <button
                             onClick={() => setViewMode('month')}
                             className={`p-2 rounded-full transition-colors ${viewMode === 'month' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
                                 }`}
+                            title="Vista mensual"
                         >
                             <CalendarDays size={16} />
                         </button>
@@ -232,32 +233,39 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
                             onClick={() => setViewMode('week')}
                             className={`p-2 rounded-full transition-colors ${viewMode === 'week' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
                                 }`}
+                            title="Vista semanal"
                         >
                             <LayoutList size={16} />
                         </button>
                     </div>
 
                     {/* Navigation */}
-                    <button
-                        onClick={goToPrevious}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                        <ChevronLeft size={20} />
-                    </button>
-                    <button
-                        onClick={goToNext}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                        <ChevronRight size={20} />
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={goToPrevious}
+                            className="p-1.5 md:p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Anterior"
+                        >
+                            <ChevronLeft size={18} className="md:w-5 md:h-5" />
+                        </button>
+                        <button
+                            onClick={goToNext}
+                            className="p-1.5 md:p-2 hover:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Siguiente"
+                        >
+                            <ChevronRight size={18} className="md:w-5 md:h-5" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Days header */}
             <div className="grid grid-cols-7 border-b border-gray-100">
-                {DAYS_ES.map((day) => (
-                    <div key={day} className="p-2 text-center text-xs font-bold text-gray-500 uppercase">
-                        {day}
+                {DAYS_ES.map((day, index) => (
+                    <div key={day} className="p-1.5 md:p-2 text-center text-[10px] md:text-xs font-bold text-gray-500 uppercase">
+                        {/* Show only first letter on mobile */}
+                        <span className="md:hidden">{day[0]}</span>
+                        <span className="hidden md:inline">{day}</span>
                     </div>
                 ))}
             </div>
@@ -290,22 +298,22 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
                                 <div
                                     key={date.toISOString()}
                                     className={`
-                    p-3 min-h-[300px] border-r border-gray-100 cursor-pointer
+                    p-2 md:p-3 min-h-[200px] md:min-h-[300px] border-r border-gray-100 cursor-pointer
                     ${isTodayDate ? 'bg-blue-50/50' : 'hover:bg-gray-50'}
                   `}
                                     onClick={() => onDayClick?.(date)}
                                 >
-                                    <div className="text-center mb-3">
-                                        <span className="text-xs text-gray-500 uppercase">{DAYS_ES[index]}</span>
+                                    <div className="text-center mb-2 md:mb-3">
+                                        <span className="text-[10px] md:text-xs text-gray-500 uppercase hidden md:block">{DAYS_ES[index]}</span>
                                         <span className={`
-                      block text-lg font-bold mt-1 w-10 h-10 mx-auto flex items-center justify-center rounded-full
+                      block text-base md:text-lg font-bold mt-1 w-8 h-8 md:w-10 md:h-10 mx-auto flex items-center justify-center rounded-full
                       ${isTodayDate ? 'bg-sustraia-accent text-white' : 'text-gray-700'}
                     `}>
                                             {date.getDate()}
                                         </span>
                                     </div>
 
-                                    <div className="space-y-2">
+                                    <div className="space-y-1 md:space-y-2">
                                         {dayEvents.map((event) => (
                                             <button
                                                 key={event.id}
@@ -314,15 +322,15 @@ export default function Calendar({ events, onEventClick, onDayClick, className =
                                                     onEventClick?.(event);
                                                 }}
                                                 className={`
-                          w-full text-left text-sm p-2 rounded-lg transition-colors
+                          w-full text-left text-[10px] md:text-sm p-1.5 md:p-2 rounded-lg transition-colors
                           ${event.type === 'plan'
                                                         ? 'bg-sustraia-accent/10 text-sustraia-accent hover:bg-sustraia-accent/20'
                                                         : 'bg-green-100 text-green-700 hover:bg-green-200'
                                                     }
                         `}
                                             >
-                                                <span className="font-medium block truncate">{event.title}</span>
-                                                <span className="text-xs opacity-70">
+                                                <span className="font-medium block truncate leading-tight">{event.title}</span>
+                                                <span className="hidden md:block text-xs opacity-70">
                                                     {event.type === 'plan' ? 'Planificado' : 'Completado'}
                                                 </span>
                                             </button>
