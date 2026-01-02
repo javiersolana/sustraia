@@ -34,7 +34,11 @@
       "Bash(npm run test:*)",
       "Bash(dir:*)",
       "Bash(ls:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx create-expo-app@latest:*)",
+      "Bash(eas:*)",
+      "Bash(copy:*)",
+      "Bash(curl:*)"
     ]
   }
 }

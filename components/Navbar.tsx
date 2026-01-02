@@ -34,7 +34,7 @@ export const Navbar = () => {
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative w-10 h-10 overflow-hidden rounded-full bg-gray-200 p-1 transition-transform group-hover:scale-105">
             <img
-              src="/images/logo-rax.png"
+              src="/images/logo2.png"
               alt="RAX Logo"
               className="w-full h-full object-cover"
             />
@@ -55,11 +55,6 @@ export const Navbar = () => {
               {link.name}
             </a>
           ))}
-          <Link to="/login">
-            <button className="bg-rax-darkText text-white px-5 py-2 rounded-full font-bold text-sm hover:bg-gray-800 transition-colors">
-              EMPEZAR
-            </button>
-          </Link>
         </div>
 
         {/* Mobile Toggle */}

@@ -1,0 +1,136 @@
+═══════════════════════════════════════════════════════════
+🚀 COMANDOS PARA BUILD ANDROID GRATIS
+═══════════════════════════════════════════════════════════
+
+EJECUTA ESTOS COMANDOS EN ORDEN:
+
+1️⃣ ABRIR TERMINAL EN LA CARPETA MOBILE
+   cd c:\Users\javie\Desktop\sustraia\mobile
+
+2️⃣ LOGIN EN EXPO (necesitas crear cuenta si no tienes)
+   eas login
+
+   Si no tienes cuenta:
+   - Ve a: https://expo.dev/signup
+   - Crea cuenta GRATIS
+   - Vuelve y ejecuta: eas login
+
+3️⃣ CONFIGURAR PROYECTO
+   eas init --id auto
+
+   (Esto creará tu project ID automáticamente)
+
+4️⃣ GENERAR APK (Build gratis)
+   eas build --platform android --profile preview --non-interactive
+
+   IMPORTANTE:
+   - Cuando pregunte por Keystore, di: y (yes)
+   - Tardará unos 15-20 minutos
+   - Te dará un link al finalizar
+
+5️⃣ VER PROGRESO DEL BUILD
+
+   Te mostrará un link tipo:
+   https://expo.dev/accounts/[tu-usuario]/projects/sustraia-mobile/builds/[id]
+
+   Abre ese link en el navegador para ver el progreso en tiempo real
+
+═══════════════════════════════════════════════════════════
+📥 DESCARGAR E INSTALAR APK
+═══════════════════════════════════════════════════════════
+
+Cuando termine el build:
+
+OPCIÓN A - DESDE EL MÓVIL (Más fácil):
+1. Abre el link del build en tu móvil Android
+2. Click en "Install" o descarga el APK
+3. Abre el APK
+4. Acepta "Instalar desde orígenes desconocidos"
+5. ¡Listo!
+
+OPCIÓN B - DESDE PC:
+1. Descarga el APK desde el link
+2. Pasa el APK a tu móvil (USB, email, WhatsApp)
+3. Instala desde el móvil
+
+═══════════════════════════════════════════════════════════
+⚠️ ANTES DE PROBAR LA APP
+═══════════════════════════════════════════════════════════
+
+Tu backend debe estar accesible. Si está en localhost:
+
+OPCIÓN 1 - Usar tu IP local (mismo WiFi):
+
+   1. Obtén tu IP:
+      ipconfig
+
+      (Busca IPv4 Address, ejemplo: 192.168.1.100)
+
+   2. Actualiza mobile/lib/api.ts:
+      const API_BASE_URL = 'http://192.168.1.100:3001/api';
+
+   3. IMPORTANTE: Móvil y PC en la MISMA WiFi
+
+OPCIÓN 2 - Usar ngrok (más fácil):
+
+   1. Instala ngrok:
+      npm install -g ngrok
+
+   2. Expone tu backend:
+      ngrok http 3001
+
+   3. Copia la URL que te da (https://xxx.ngrok-free.app)
+
+   4. Actualiza mobile/lib/api.ts:
+      const API_BASE_URL = 'https://xxx.ngrok-free.app/api';
+
+═══════════════════════════════════════════════════════════
+🔄 ACTUALIZAR APP (nuevas versiones)
+═══════════════════════════════════════════════════════════
+
+1. Edita mobile/app.json:
+   "version": "1.0.1",  <-- Incrementar
+   "android": {
+     "versionCode": 2   <-- Incrementar
+   }
+
+2. Nuevo build:
+   eas build --platform android --profile preview
+
+3. Descarga e instala nuevo APK
+
+═══════════════════════════════════════════════════════════
+📊 COMANDOS ÚTILES
+═══════════════════════════════════════════════════════════
+
+Ver lista de builds:
+   eas build:list
+
+Ver detalles de un build:
+   eas build:view [build-id]
+
+Cancelar build en progreso:
+   eas build:cancel
+
+Ver cuenta de Expo:
+   eas whoami
+
+═══════════════════════════════════════════════════════════
+✅ TODO LISTO
+═══════════════════════════════════════════════════════════
+
+Ya configuré:
+✓ app.json con permisos Android
+✓ eas.json con perfil de build
+✓ Plugins de notificaciones e image picker
+✓ EAS CLI instalado y listo
+
+AHORA SÍ:
+1. Abre terminal en mobile/
+2. Ejecuta: eas login
+3. Ejecuta: eas init --id auto
+4. Ejecuta: eas build --platform android --profile preview
+5. Espera 15-20 min
+6. Descarga APK e instala
+
+¡Éxito! 🎉

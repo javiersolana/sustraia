@@ -1,0 +1,25 @@
+════════════════════════════════════════════════
+🔧 ARREGLÉ EL ERROR - EJECUTA ESTO AHORA
+════════════════════════════════════════════════
+
+El problema era que "projectId: auto" no es válido.
+
+EJECUTA ESTE COMANDO (copia y pega):
+
+eas build:configure
+
+Cuando te pregunte:
+1. "Select platform" → Selecciona: Android
+2. Generará un projectId REAL automáticamente
+
+DESPUÉS ejecuta:
+
+eas build --platform android --profile preview
+
+════════════════════════════════════════════════
+✅ YA ARREGLÉ app.json
+════════════════════════════════════════════════
+
+Ahora ejecuta los 2 comandos de arriba en orden.
+
+El build debería funcionar correctamente.

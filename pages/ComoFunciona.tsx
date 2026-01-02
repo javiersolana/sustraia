@@ -65,7 +65,7 @@ export default function ComoFunciona() {
   ];
 
   return (
-    <section className="py-32 bg-white">
+    <section className="py-32 bg-rax-cream">
       <div className="container mx-auto px-6">
         {/* Hero Claim */}
         <div className="max-w-5xl mx-auto text-center mb-20">
@@ -75,12 +75,12 @@ export default function ComoFunciona() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="font-display font-black text-5xl md:text-6xl lg:text-8xl tracking-tight mb-10 leading-[0.95]">
-              TU SUSTRAIA SE<br />
+            <h2 className="font-display font-black text-5xl md:text-6xl lg:text-8xl tracking-tight mb-10 leading-[0.95] text-rax-darkText">
+              TU RAX SE<br />
               CALIBRA A TI—<br />
-              <span className="text-sustraia-accent">PORQUE NINGÚN<br />OPOSITOR ES IGUAL</span>
+              <span className="text-rax-red">PORQUE NINGÚN<br />OPOSITOR ES IGUAL</span>
             </h2>
-            <p className="text-xl md:text-2xl text-sustraia-gray max-w-3xl mx-auto leading-relaxed font-medium">
+            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed font-medium">
               Del primer día al examen: así transformamos tu preparación en resultados medibles.
             </p>
           </motion.div>
@@ -101,12 +101,12 @@ export default function ComoFunciona() {
                 className={cn(
                   "relative p-8 md:p-10 rounded-3xl border-2 transition-all hover:shadow-xl",
                   membership.highlighted
-                    ? "bg-sustraia-text text-white border-sustraia-text"
+                    ? "bg-rax-darkText text-white border-rax-darkText"
                     : "bg-white border-gray-200"
                 )}
               >
                 {membership.highlighted && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-sustraia-accent text-white text-xs font-bold px-6 py-2 rounded-full">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-rax-red text-white text-xs font-bold px-6 py-2 rounded-full">
                     MÁS POPULAR
                   </div>
                 )}
@@ -114,7 +114,7 @@ export default function ComoFunciona() {
                   <h3 className="font-display font-black text-3xl mb-2">{membership.title}</h3>
                   <p className={cn(
                     "text-sm mb-4",
-                    membership.highlighted ? "text-gray-300" : "text-sustraia-gray"
+                    membership.highlighted ? "text-gray-300" : "text-gray-600"
                   )}>
                     {membership.description}
                   </p>
@@ -127,9 +127,9 @@ export default function ComoFunciona() {
                     <li key={i} className="flex items-start gap-3 text-sm">
                       <Check className={cn(
                         "w-5 h-5 shrink-0 mt-0.5",
-                        membership.highlighted ? "text-sustraia-accent" : "text-sustraia-accent"
+                        membership.highlighted ? "text-rax-green" : "text-rax-green"
                       )} />
-                      <span className={membership.highlighted ? "text-gray-100" : "text-sustraia-text"}>
+                      <span className={membership.highlighted ? "text-gray-100" : "text-rax-darkText"}>
                         {feature}
                       </span>
                     </li>
@@ -164,7 +164,7 @@ export default function ComoFunciona() {
                   />
                 </div>
                 {/* Floating number badge */}
-                <div className="absolute -top-6 -left-6 w-20 h-20 bg-sustraia-accent rounded-2xl flex items-center justify-center shadow-xl">
+                <div className="absolute -top-6 -left-6 w-20 h-20 bg-rax-red rounded-2xl flex items-center justify-center shadow-xl">
                   <span className="font-display font-black text-3xl text-white">{feature.number}</span>
                 </div>
               </div>
@@ -172,13 +172,13 @@ export default function ComoFunciona() {
               {/* Content */}
               <div className={cn("space-y-6", index % 2 === 1 && "md:col-start-1 md:row-start-1")}>
                 <div>
-                  <p className="text-sustraia-accent font-bold uppercase tracking-wider text-sm mb-3">
+                  <p className="text-rax-red font-bold uppercase tracking-wider text-sm mb-3">
                     {feature.subtitle}
                   </p>
-                  <h3 className="font-display font-black text-4xl md:text-5xl tracking-tight mb-6 leading-tight">
+                  <h3 className="font-display font-black text-4xl md:text-5xl tracking-tight mb-6 leading-tight text-rax-darkText">
                     {feature.title}
                   </h3>
-                  <p className="text-lg text-sustraia-gray leading-relaxed">
+                  <p className="text-lg text-gray-600 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -188,11 +188,11 @@ export default function ComoFunciona() {
                   {feature.metrics.map((metric, i) => (
                     <div
                       key={i}
-                      className="bg-sustraia-base p-4 rounded-xl border border-gray-100"
+                      className="bg-white p-4 rounded-xl border border-gray-200"
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-sustraia-accent rounded-full"></div>
-                        <p className="text-sm font-bold text-sustraia-text">{metric}</p>
+                        <div className="w-2 h-2 bg-rax-green rounded-full"></div>
+                        <p className="text-sm font-bold text-rax-darkText">{metric}</p>
                       </div>
                     </div>
                   ))}
@@ -208,15 +208,15 @@ export default function ComoFunciona() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mt-32 text-center bg-gradient-to-br from-sustraia-accent to-blue-600 rounded-3xl p-12 md:p-16 text-white"
+          className="mt-32 text-center bg-gradient-to-br from-rax-red to-rax-purple rounded-3xl p-12 md:p-16 text-white"
         >
           <h3 className="font-display font-black text-3xl md:text-4xl mb-4">
             ¿Listo para tu calibración?
           </h3>
-          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
+          <p className="text-red-100 text-lg mb-8 max-w-2xl mx-auto">
             El primer mes establecemos tu perfil de rendimiento y construimos tu planificación personalizada.
           </p>
-          <Button variant="secondary" size="lg" className="bg-white text-sustraia-accent hover:bg-gray-100">
+          <Button variant="secondary" size="lg" className="bg-white text-rax-red hover:bg-gray-100">
             Empezar Ahora
           </Button>
         </motion.div>

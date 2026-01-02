@@ -1,0 +1,44 @@
+{
+  "name": "sustraia-mobile",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "reset": "expo start -c",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/datetimepicker": "^8.5.1",
+    "axios": "^1.13.2",
+    "expo": "~54.0.30",
+    "expo-auth-session": "^7.0.10",
+    "expo-constants": "^18.0.12",
+    "expo-device": "^8.0.10",
+    "expo-image-picker": "^17.0.10",
+    "expo-linking": "^8.0.11",
+    "expo-notifications": "^0.32.15",
+    "expo-router": "^6.0.21",
+    "expo-sharing": "^14.0.8",
+    "expo-status-bar": "~3.0.9",
+    "expo-web-browser": "^15.0.10",
+    "lucide-react-native": "^0.562.0",
+    "react": "^19.2.3",
+    "react-native": "^0.81.5",
+    "react-native-calendars": "^1.1313.0",
+    "react-native-chart-kit": "^6.12.0",
+    "react-native-gesture-handler": "^2.30.0",
+    "react-native-safe-area-context": "^5.6.2",
+    "react-native-screens": "^4.19.0",
+    "react-native-svg": "^15.15.1",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}
