@@ -74,6 +74,9 @@ export const ProgramasChoice = () => {
           <h2 className="font-display font-black text-5xl md:text-6xl lg:text-7xl tracking-tight text-rax-darkText mb-6">
             ELIGE TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red via-rax-purple to-rax-green">CAMINO</span>
           </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+            No importa cuál sea tu meta, tenemos el conocimiento, la metodología y la pasión para llevarte allí.
+          </p>
         </motion.div>
 
         {/* Programs Grid */}
