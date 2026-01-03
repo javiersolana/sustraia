@@ -8,7 +8,8 @@ import {
   LayoutDashboard,
   Users,
   BarChart3,
-  Settings
+  Settings,
+  Activity
 } from 'lucide-react';
 import { Role } from '../../lib/types/dashboard';
 import { motion } from 'framer-motion';
