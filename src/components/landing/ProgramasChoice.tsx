@@ -55,9 +55,9 @@ export const ProgramasChoice = () => {
   ];
 
   return (
-    <section className="py-24 bg-rax-dark relative overflow-hidden">
+    <section className="py-24 bg-rax-cream relative overflow-hidden">
       {/* Decorative background */}
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-10">
         <div className="absolute top-0 left-0 w-96 h-96 bg-rax-red rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-rax-purple rounded-full blur-3xl"></div>
       </div>
@@ -71,12 +71,9 @@ export const ProgramasChoice = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="font-display font-black text-5xl md:text-6xl lg:text-7xl tracking-tight text-white mb-6">
-            NUESTROS <span className="text-rax-red">P</span>ROGRAMAS
+          <h2 className="font-display font-black text-5xl md:text-6xl lg:text-7xl tracking-tight text-rax-darkText mb-6">
+            ELIGE TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red via-rax-purple to-rax-green">CAMINO</span>
           </h2>
-          <p className="text-xl text-gray-400 max-w-3xl mx-auto font-medium">
-            <span className="text-rax-green">RUNNING & TRAIL</span> | <span className="text-rax-purple">CAMBIO FÍSICO</span> | <span className="text-rax-red">OPOSICIONES</span>
-          </p>
         </motion.div>
 
         {/* Programs Grid */}
@@ -93,7 +90,7 @@ export const ProgramasChoice = () => {
                 className="group relative"
               >
                 {/* Card */}
-                <div className="relative h-full bg-gray-900 rounded-3xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-500 hover:shadow-2xl hover:shadow-rax-red/20">
+                <div className="relative h-full bg-white rounded-3xl overflow-hidden border border-gray-200 hover:border-gray-300 transition-all duration-500 hover:shadow-2xl hover:shadow-rax-red/10">
                   {/* Image with overlay */}
                   <div className="relative h-64 overflow-hidden">
                     <div className={`absolute inset-0 bg-gradient-to-b ${program.color} opacity-60 z-10 group-hover:opacity-50 transition-opacity duration-500`}></div>
@@ -110,20 +107,20 @@ export const ProgramasChoice = () => {
 
                   {/* Content */}
                   <div className="p-6 md:p-8">
-                    <h3 className="font-display font-black text-3xl text-white mb-2">
+                    <h3 className="font-display font-black text-3xl text-rax-darkText mb-2">
                       {program.title}
                     </h3>
                     <p className={`text-sm font-bold uppercase tracking-wider mb-4 bg-gradient-to-r ${program.color} bg-clip-text text-transparent`}>
                       {program.subtitle}
                     </p>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                    <p className="text-gray-600 text-sm leading-relaxed mb-6">
                       {program.description}
                     </p>
 
                     {/* Features List */}
                     <ul className="space-y-2 mb-8">
                       {program.features.map((feature, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-gray-500">
+                        <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
                           <div className="w-1.5 h-1.5 bg-rax-red rounded-full mt-1.5 shrink-0"></div>
                           <span>{feature}</span>
                         </li>

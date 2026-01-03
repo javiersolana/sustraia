@@ -5,7 +5,6 @@ import {
   TrendingUp,
   MessageSquare,
   User,
-  Activity,
   LayoutDashboard,
   Users,
   BarChart3,
@@ -53,10 +52,14 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
       <div>
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12 px-2">
-          <div className="w-8 h-8 bg-sustraia-accent rounded-lg flex items-center justify-center">
-            <Activity className="text-white w-5 h-5" />
+          <div className="relative w-10 h-10 overflow-hidden rounded-full bg-gray-200 p-1">
+            <img
+              src="/images/logo2.png"
+              alt="RAX Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="font-display font-bold text-xl tracking-tight text-sustraia-text">SUSTRAIA</span>
+          <span className="font-display font-bold text-xl tracking-tight text-rax-darkText">RAX</span>
         </div>
 
         {/* Navigation */}

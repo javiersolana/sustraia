@@ -90,7 +90,7 @@ export default function ResetPassword() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-rax-cream flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -105,7 +105,7 @@ export default function ResetPassword() {
 
   if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-rax-cream flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,7 +134,7 @@ export default function ResetPassword() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-rax-cream flex items-center justify-center p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -169,20 +169,27 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] flex items-center justify-center p-6">
+    <div className="min-h-screen bg-rax-cream flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-3xl p-12 max-w-md w-full shadow-xl"
       >
         {/* Logo */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-[#111111] tracking-tighter mb-2">
-            SUSTRAIA
-          </h1>
-          <p className="text-[#666666]">Nueva contraseña</p>
+        <div className="flex flex-col items-center mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="relative w-12 h-12 overflow-hidden rounded-full bg-gray-200 p-1">
+              <img
+                src="/images/logo2.png"
+                alt="RAX Logo"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <span className="text-3xl font-display font-black text-rax-darkText tracking-tighter">RAX</span>
+          </div>
+          <p className="text-gray-500">Nueva contraseña</p>
           {tokenEmail && (
-            <p className="text-sm text-[#999999] mt-2">
+            <p className="text-sm text-gray-400 mt-2">
               {tokenEmail}
             </p>
           )}

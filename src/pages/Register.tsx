@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Mail, Lock, User, Users, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, Users, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth, ApiError } from '../../lib/api/client';
 
@@ -41,7 +41,7 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-sustraia-base flex items-center justify-center p-6">
+    <div className="min-h-screen bg-rax-cream flex items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -49,10 +49,14 @@ const Register: React.FC = () => {
       >
         {/* Logo */}
         <div className="flex items-center justify-center gap-3 mb-12">
-          <div className="w-12 h-12 bg-sustraia-accent rounded-2xl flex items-center justify-center">
-            <Activity className="text-white w-7 h-7" />
+          <div className="relative w-12 h-12 overflow-hidden rounded-full bg-gray-200 p-1">
+            <img
+              src="/images/logo2.png"
+              alt="RAX Logo"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <span className="font-display font-black text-3xl tracking-tighter text-sustraia-text">SUSTRAIA</span>
+          <span className="font-display font-black text-3xl tracking-tighter text-rax-darkText">RAX</span>
         </div>
 
         {/* Card */}
@@ -198,8 +202,8 @@ const Register: React.FC = () => {
           </div>
         </motion.div>
 
-        <p className="text-center text-sm text-sustraia-gray mt-8">
-          © 2025 SUSTRAIA. Todos los derechos reservados.
+        <p className="text-center text-sm text-gray-500 mt-8">
+          © 2025 RAX. Todos los derechos reservados.
         </p>
       </motion.div>
     </div>
