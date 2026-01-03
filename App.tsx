@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import Home from './pages/Home';
 import ComoFunciona from './pages/ComoFunciona';
 import Login from './pages/Login';
+import Register from './src/pages/Register';
 import AthleteDashboard from './pages/dashboards/AthleteDashboard';
 import CoachDashboard from './pages/dashboards/CoachDashboard';
 import AthleteDetailView from './pages/dashboards/AthleteDetailView';
@@ -27,8 +28,9 @@ export default function App() {
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/como-funciona" element={<Layout><ComoFunciona /></Layout>} />
 
-        {/* Login page without Layout */}
+        {/* Auth pages without Layout */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Password reset pages without Layout */}
         <Route path="/request-reset" element={<RequestPasswordReset />} />
