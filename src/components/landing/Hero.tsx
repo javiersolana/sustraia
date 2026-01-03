@@ -13,7 +13,7 @@ export const Hero: React.FC = () => {
 
       {/* Abstract Lines / Texture Background */}
       <div className="absolute inset-0 opacity-10 pointer-events-none"
-           style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
+        style={{ backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)', backgroundSize: '40px 40px' }}>
       </div>
 
       <div className="container mx-auto px-6 grid md:grid-cols-2 gap-8 items-center relative z-10">
@@ -26,7 +26,7 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.8 }}
           >
             <h1 className="text-6xl md:text-8xl font-display font-black text-rax-darkText leading-[0.9] tracking-tighter mb-4">
-              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red to-orange-600">OBJETIVO</span>.<br />
+              TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-red to-orange-600">OBJETIVO</span>,<br />
               TU <span className="text-transparent bg-clip-text bg-gradient-to-r from-rax-purple to-indigo-400">MOMENTO</span>.
             </h1>
 
@@ -83,8 +83,8 @@ export const Hero: React.FC = () => {
               className="w-full h-full object-cover object-center rounded-sm mask-image-linear-gradient grayscale hover:grayscale-0 transition-all duration-700"
               style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 90%, 0% 100%)' }}
             />
-             {/* Gradient Overlay on Image */}
-             <div className="absolute inset-0 bg-gradient-to-tr from-rax-dark/80 via-transparent to-transparent z-30" style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 90%, 0% 100%)' }}></div>
+            {/* Gradient Overlay on Image */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-rax-dark/80 via-transparent to-transparent z-30" style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 90%, 0% 100%)' }}></div>
           </div>
 
           {/* Graphical Elements Behind */}
