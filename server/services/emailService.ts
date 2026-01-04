@@ -647,6 +647,7 @@ class EmailService {
   async sendContactFormEmail(data: {
     nombre: string;
     correo: string;
+    telefono?: string;
     localidad: string;
     expectativas: string;
   }) {
@@ -797,6 +798,12 @@ class EmailService {
           <div class="info-label">Email</div>
           <div class="info-value"><a href="mailto:${data.correo}" style="color: #8B5CF6; text-decoration: none;">${data.correo}</a></div>
         </div>
+        ${data.telefono ? `
+        <div class="info-row">
+          <div class="info-label">Teléfono</div>
+          <div class="info-value"><a href="tel:${data.telefono}" style="color: #8B5CF6; text-decoration: none;">${data.telefono}</a></div>
+        </div>
+        ` : ''}
         <div class="info-row">
           <div class="info-label">Localidad</div>
           <div class="info-value">${data.localidad}</div>

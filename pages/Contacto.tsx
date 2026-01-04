@@ -9,6 +9,7 @@ export default function Contacto() {
   const [formData, setFormData] = useState({
     nombre: '',
     correo: '',
+    telefono: '',
     localidad: '',
     expectativas: ''
   });
@@ -154,6 +155,22 @@ export default function Contacto() {
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 outline-none transition-all text-rax-darkText"
                   placeholder="tu@email.com"
+                />
+              </div>
+
+              {/* Teléfono */}
+              <div>
+                <label htmlFor="telefono" className="block text-sm font-bold text-rax-darkText mb-2">
+                  Teléfono <span className="text-gray-400 font-normal text-xs">(opcional)</span>
+                </label>
+                <input
+                  type="tel"
+                  id="telefono"
+                  name="telefono"
+                  value={formData.telefono}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 outline-none transition-all text-rax-darkText"
+                  placeholder="+34 XXX XXX XXX"
                 />
               </div>
 

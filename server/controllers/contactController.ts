@@ -4,13 +4,14 @@ import { emailService } from '../services/emailService';
 interface ContactFormData {
   nombre: string;
   correo: string;
+  telefono?: string;
   localidad: string;
   expectativas: string;
 }
 
 export const submitContactForm = async (req: Request, res: Response) => {
   try {
-    const { nombre, correo, localidad, expectativas }: ContactFormData = req.body;
+    const { nombre, correo, telefono, localidad, expectativas }: ContactFormData = req.body;
 
     // Validación básica
     if (!nombre || !correo || !localidad || !expectativas) {
@@ -33,6 +34,7 @@ export const submitContactForm = async (req: Request, res: Response) => {
     const emailSent = await emailService.sendContactFormEmail({
       nombre,
       correo,
+      telefono,
       localidad,
       expectativas,
     });
