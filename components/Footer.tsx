@@ -11,7 +11,7 @@ export const Footer = () => (
               <img
                 src="/images/logo.png"
                 alt="SUSTRAIN Logo"
-                className="h-8 w-auto"
+                className="h-16 md:h-20 w-auto"
               />
            </div>
            <p className="text-gray-600 text-sm">© 2025 SUSTRAIN. Todos los derechos reservados.</p>
