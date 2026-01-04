@@ -620,7 +620,7 @@ class EmailService {
     expectativas: string;
   }) {
     // Email que recibes tú como admin
-    const adminEmail = process.env.ADMIN_CONTACT_EMAIL || 'javierrsolanaa@gmail.com';
+    const adminEmail = process.env.ADMIN_CONTACT_EMAIL || 'lauretajon@gmail.com';
 
     const html = `
 <!DOCTYPE html>
