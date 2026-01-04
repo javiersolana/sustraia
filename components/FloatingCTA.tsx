@@ -12,7 +12,7 @@ export const FloatingCTA = () => {
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4"
     >
       <Link to="/contacto">
-        <button className="group bg-rax-darkText text-white px-8 py-4 rounded-full font-display font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center gap-3 border border-gray-700">
+        <button className="group bg-gradient-to-r from-purple-500 to-teal-400 text-white px-8 py-4 rounded-full font-display font-bold text-base shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center gap-3">
           <span>EMPEZAR AHORA</span>
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </button>
