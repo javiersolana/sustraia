@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Send, CheckCircle, AlertCircle } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://sustraia.onrender.com';
+const API_BASE = import.meta.env.VITE_API_URL?.replace(/\/api\/?$/, '') || 'https://sustraia.onrender.com';
 
 export default function Contacto() {
   const [formData, setFormData] = useState({
@@ -29,7 +29,7 @@ export default function Contacto() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/contact`, {
+      const response = await fetch(`${API_BASE}/api/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
