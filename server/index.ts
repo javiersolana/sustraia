@@ -33,6 +33,8 @@ app.use(
       'http://localhost:5173',
       'http://localhost:3000',
       'https://sustraia.vercel.app',
+      'https://sustrain.es',
+      'https://www.sustrain.es',
       config.frontend.url,
     ].filter(Boolean),
     credentials: true,
