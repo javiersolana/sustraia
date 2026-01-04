@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import Home from './pages/Home';
 import ComoFunciona from './pages/ComoFunciona';
+import Contacto from './pages/Contacto';
 import Login from './pages/Login';
 import Register from './src/pages/Register';
 import AthleteDashboard from './pages/dashboards/AthleteDashboard';
@@ -27,6 +28,9 @@ export default function App() {
         {/* Landing pages with Layout (Navbar + Footer) */}
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/como-funciona" element={<Layout><ComoFunciona /></Layout>} />
+
+        {/* Contact form without Layout */}
+        <Route path="/contacto" element={<Contacto />} />
 
         {/* Auth pages without Layout */}
         <Route path="/login" element={<Login />} />

@@ -31,17 +31,12 @@ export const Navbar = () => {
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo Area */}
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 overflow-hidden rounded-full bg-gray-200 p-1 transition-transform group-hover:scale-105">
-            <img
-              src="/images/logo2.png"
-              alt="RAX Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <span className="text-2xl font-display font-black tracking-tighter text-rax-darkText">
-            RAX
-          </span>
+        <Link to="/" className="flex items-center group">
+          <img
+            src="/images/logo.png"
+            alt="SUSTRAIN Logo"
+            className="h-8 md:h-10 w-auto transition-transform group-hover:scale-105"
+          />
         </Link>
 
         {/* Desktop Nav */}

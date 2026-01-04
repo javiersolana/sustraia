@@ -53,14 +53,11 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
       <div>
         {/* Logo */}
         <div className="flex items-center gap-3 mb-12 px-2">
-          <div className="relative w-10 h-10 overflow-hidden rounded-full bg-gray-200 p-1">
-            <img
-              src="/images/logo2.png"
-              alt="RAX Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <span className="font-display font-bold text-xl tracking-tight text-rax-darkText">RAX</span>
+          <img
+            src="/images/logo.png"
+            alt="SUSTRAIN Logo"
+            className="h-8 w-auto"
+          />
         </div>
 
         {/* Navigation */}

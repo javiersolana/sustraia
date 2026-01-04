@@ -8,16 +8,13 @@ export const Footer = () => (
 
         <div className="mb-8 md:mb-0 flex flex-col items-center md:items-start">
            <div className="flex items-center gap-3 mb-4">
-              <div className="relative w-8 h-8 overflow-hidden rounded-full bg-gray-200 p-0.5">
-                <img
-                  src="/images/logo2.png"
-                  alt="RAX Logo"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span className="text-xl font-display font-black tracking-tighter">RAX</span>
+              <img
+                src="/images/logo.png"
+                alt="SUSTRAIN Logo"
+                className="h-8 w-auto"
+              />
            </div>
-           <p className="text-gray-600 text-sm">© 2024 RAX Performance. Todos los derechos reservados.</p>
+           <p className="text-gray-600 text-sm">© 2025 SUSTRAIN. Todos los derechos reservados.</p>
         </div>
 
         <div className="flex space-x-6">

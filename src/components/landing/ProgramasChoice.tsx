@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mountain, Target, Trophy, ArrowRight } from 'lucide-react';
 
@@ -131,10 +132,13 @@ export const ProgramasChoice = () => {
                     </ul>
 
                     {/* CTA Button */}
-                    <button className={`w-full bg-gradient-to-r ${program.color} text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 group/btn`}>
+                    <Link
+                      to="/contacto"
+                      className={`w-full bg-gradient-to-r ${program.color} text-white font-bold py-3 px-6 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 group/btn`}
+                    >
                       <span className="text-sm">{program.cta}</span>
                       <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
