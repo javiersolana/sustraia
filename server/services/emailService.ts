@@ -635,7 +635,6 @@ class EmailService {
       html,
     });
   }
-}
 
   /**
    * Email de formulario de contacto (landing page)
