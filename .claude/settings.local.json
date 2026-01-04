@@ -39,7 +39,8 @@
       "Bash(eas:*)",
       "Bash(copy:*)",
       "Bash(curl:*)",
-      "Bash(git remote:*)"
+      "Bash(git remote:*)",
+      "Bash(git rm:*)"
     ]
   }
 }
