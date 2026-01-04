@@ -14,6 +14,7 @@ import trainingPlanRoutes from './routes/trainingPlanRoutes';
 import setupRoutes from './routes/setupRoutes';
 import userRoutes from './routes/userRoutes';
 import notesRoutes from './routes/notesRoutes';
+import contactRoutes from './routes/contactRoutes';
 
 // Validate environment variables
 try {
@@ -64,6 +65,7 @@ app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/training-plans', trainingPlanRoutes);
 app.use('/api', notesRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Error handling
 app.use(notFound);

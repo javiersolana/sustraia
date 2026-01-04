@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Send, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle, AlertCircle } from 'lucide-react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://sustraia.onrender.com';
 
 export default function Contacto() {
   const [formData, setFormData] = useState({
@@ -11,6 +13,8 @@ export default function Contacto() {
     expectativas: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -19,27 +23,32 @@ export default function Contacto() {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null);
 
-    // Formatear mensaje para WhatsApp
-    const mensaje = `¡Hola! Me gustaría empezar con SUSTRAIN 🏃‍♂️
+    try {
+      const response = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-*Nombre:* ${formData.nombre}
-*Correo:* ${formData.correo}
-*Localidad:* ${formData.localidad}
+      const data = await response.json();
 
-*¿Qué espero de vosotros?*
-${formData.expectativas}`;
-
-    // Número de WhatsApp (sin el +)
-    const telefono = '34674561505';
-
-    // Abrir WhatsApp con el mensaje
-    const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-    window.open(url, '_blank');
-
-    setIsSubmitted(true);
+      if (data.success) {
+        setIsSubmitted(true);
+      } else {
+        setError(data.message || 'Error al enviar el formulario');
+      }
+    } catch (err) {
+      setError('Error de conexión. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isSubmitted) {
@@ -54,10 +63,10 @@ ${formData.expectativas}`;
             <CheckCircle className="w-10 h-10 text-white" />
           </div>
           <h2 className="font-display font-black text-3xl text-rax-darkText mb-4">
-            ¡Perfecto!
+            ¡Mensaje Enviado!
           </h2>
           <p className="text-gray-600 mb-8">
-            Se ha abierto WhatsApp con tu mensaje. Envíalo y te responderemos lo antes posible. ¡Gracias por confiar en SUSTRAIN!
+            Hemos recibido tu mensaje. Nos pondremos en contacto contigo lo antes posible. ¡Gracias por confiar en SUSTRAIN!
           </p>
           <Link
             to="/"
@@ -183,13 +192,28 @@ ${formData.expectativas}`;
               </div>
             </div>
 
+            {/* Error Message */}
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 text-red-700">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">{error}</span>
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full mt-8 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
+              disabled={isLoading}
+              className="w-full mt-8 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <span>Enviar por WhatsApp</span>
-              <Send className="w-4 h-4" />
+              {isLoading ? (
+                <span>Enviando...</span>
+              ) : (
+                <>
+                  <span>Enviar mensaje</span>
+                  <Send className="w-4 h-4" />
+                </>
+              )}
             </button>
 
             <p className="text-center text-xs text-gray-500 mt-4">

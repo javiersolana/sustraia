@@ -610,4 +610,193 @@ class EmailService {
   }
 }
 
+  /**
+   * Email de formulario de contacto (landing page)
+   */
+  async sendContactFormEmail(data: {
+    nombre: string;
+    correo: string;
+    localidad: string;
+    expectativas: string;
+  }) {
+    // Email que recibes tú como admin
+    const adminEmail = process.env.ADMIN_CONTACT_EMAIL || 'javierrsolanaa@gmail.com';
+
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #111111;
+      background-color: #F5F5F7;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #FFFFFF;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, #8B5CF6 0%, #14B8A6 100%);
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .logo {
+      font-size: 32px;
+      font-weight: 900;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+    .content {
+      padding: 48px 32px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #111111;
+      margin: 0 0 24px;
+      letter-spacing: -0.02em;
+    }
+    .info-card {
+      background: #F5F5F7;
+      border-radius: 16px;
+      padding: 24px;
+      margin: 24px 0;
+    }
+    .info-row {
+      margin: 16px 0;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #E5E5E5;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .info-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #8B5CF6;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+    .info-value {
+      font-size: 16px;
+      color: #111111;
+      font-weight: 500;
+    }
+    .expectativas {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      border-left: 4px solid #14B8A6;
+    }
+    .expectativas-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #14B8A6;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .expectativas-text {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .cta-button {
+      display: inline-block;
+      background: #25D366;
+      color: #FFFFFF;
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      margin: 24px 0;
+    }
+    .footer {
+      background: #F5F5F7;
+      padding: 32px;
+      text-align: center;
+      font-size: 14px;
+      color: #999999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">SUSTRAIN</div>
+      <div class="badge">🎯 Nuevo Lead</div>
+    </div>
+
+    <div class="content">
+      <h1>¡Nuevo interesado! 🚀</h1>
+
+      <div class="info-card">
+        <div class="info-row">
+          <div class="info-label">Nombre</div>
+          <div class="info-value">${data.nombre}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Email</div>
+          <div class="info-value"><a href="mailto:${data.correo}" style="color: #8B5CF6; text-decoration: none;">${data.correo}</a></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label">Localidad</div>
+          <div class="info-value">${data.localidad}</div>
+        </div>
+      </div>
+
+      <div class="expectativas">
+        <div class="expectativas-label">¿Qué espera de nosotros?</div>
+        <div class="expectativas-text">${data.expectativas}</div>
+      </div>
+
+      <a href="mailto:${data.correo}?subject=¡Hola ${data.nombre}! - SUSTRAIN&body=Hola ${data.nombre},%0A%0AGracias por contactar con SUSTRAIN..." class="cta-button">
+        📧 Responder por Email
+      </a>
+    </div>
+
+    <div class="footer">
+      <p style="margin: 0;">
+        Este email fue generado automáticamente desde el formulario de contacto de SUSTRAIN
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    return this.sendEmail({
+      to: adminEmail,
+      subject: `🎯 Nuevo lead: ${data.nombre} - ${data.localidad}`,
+      html,
+    });
+  }
+}
+
 export const emailService = new EmailService();
