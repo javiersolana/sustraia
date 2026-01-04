@@ -43,7 +43,7 @@ export const Hero: React.FC = () => {
             className="flex flex-wrap gap-4 items-center"
           >
             <Link
-              to="/contacto"
+              to="/login"
               className="bg-rax-darkText text-white px-8 py-4 font-black text-lg tracking-wide hover:bg-gray-800 transition-colors flex items-center gap-2 group rounded-xl"
             >
               ZONA ATLETAS
