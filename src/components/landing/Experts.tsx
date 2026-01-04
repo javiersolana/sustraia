@@ -13,6 +13,12 @@ const experts = [
     role: "MSc Sports Science & Fuerza",
     image: "/images/unai-gazpio.jpg",
     quote: "Especialista en desarrollo de fuerza aplicada. Se encarga de que ganes potencia para el press banca, cuerda y dominadas minimizando el riesgo de lesión."
+  },
+  {
+    name: "Jon Baz",
+    role: "Medallista Mundial & Asesor Deportivo",
+    image: "/images/jon.jpeg",
+    quote: "Campeón de España de Trail y medallista mundial. Su experiencia de élite guía a atletas hacia el máximo rendimiento con metodologías probadas al más alto nivel."
   }
 ];
 
@@ -30,7 +36,7 @@ export const Experts: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {experts.map((expert, index) => (
             <motion.div
               key={index}

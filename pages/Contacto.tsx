@@ -177,7 +177,7 @@ export default function Contacto() {
               {/* Expectativas */}
               <div>
                 <label htmlFor="expectativas" className="block text-sm font-bold text-rax-darkText mb-2">
-                  ¿Qué esperas de nosotros?
+                  ¿Cómo podemos ayudarte?
                 </label>
                 <textarea
                   id="expectativas"
@@ -187,7 +187,7 @@ export default function Contacto() {
                   value={formData.expectativas}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 outline-none transition-all text-rax-darkText resize-none"
-                  placeholder="Cuéntanos tus objetivos, qué te gustaría conseguir..."
+                  placeholder="Cuéntanos tu historia, tus objetivos, cómo podemos ayudarte..."
                 />
               </div>
             </div>

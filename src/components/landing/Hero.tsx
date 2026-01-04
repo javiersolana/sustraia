@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, MessageCircle } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
@@ -40,7 +40,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-wrap gap-4"
+            className="flex flex-wrap gap-4 items-center"
           >
             <Link
               to="/contacto"
@@ -49,12 +49,22 @@ export const Hero: React.FC = () => {
               EMPEZAR AHORA
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
+
+            <a
+              href="https://wa.me/34674561505"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-[#25D366] text-white p-4 rounded-full hover:bg-[#20BA5A] transition-all hover:scale-110 shadow-lg group"
+              aria-label="Contactar por WhatsApp"
+            >
+              <MessageCircle className="w-6 h-6" />
+            </a>
           </motion.div>
 
           <div className="pt-6 flex items-center gap-8 text-gray-500 font-mono text-xs">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-              RUNNING
+              ZONA ATLETAS
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse delay-75"></div>
