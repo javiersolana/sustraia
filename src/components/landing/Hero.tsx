@@ -54,7 +54,7 @@ export const Hero: React.FC = () => {
           <div className="pt-6 flex items-center gap-8 text-gray-500 font-mono text-xs">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-              ZONA ATLETAS
+              RUNNING
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-teal-400 animate-pulse delay-75"></div>
