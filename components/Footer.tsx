@@ -2,7 +2,7 @@ import React from 'react';
 import { Instagram, Twitter, Mail } from 'lucide-react';
 
 export const Footer = () => (
-  <footer className="bg-rax-cream text-rax-darkText py-12 border-t border-gray-300">
+  <footer className="bg-rax-cream text-rax-darkText py-8 border-t border-gray-300">
     <div className="container mx-auto px-6">
       <div className="flex flex-col md:flex-row justify-between items-center">
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, MessageCircle } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const Hero: React.FC = () => {
   return (
@@ -46,19 +46,9 @@ export const Hero: React.FC = () => {
               to="/contacto"
               className="bg-rax-darkText text-white px-8 py-4 font-black text-lg tracking-wide hover:bg-gray-800 transition-colors flex items-center gap-2 group rounded-xl"
             >
-              EMPEZAR AHORA
+              ZONA ATLETAS
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-
-            <a
-              href="https://wa.me/34674561505"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-[#25D366] text-white p-4 rounded-full hover:bg-[#20BA5A] transition-all hover:scale-110 shadow-lg group"
-              aria-label="Contactar por WhatsApp"
-            >
-              <MessageCircle className="w-6 h-6" />
-            </a>
           </motion.div>
 
           <div className="pt-6 flex items-center gap-8 text-gray-500 font-mono text-xs">
