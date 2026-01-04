@@ -11,7 +11,6 @@ export default function Contacto() {
     expectativas: ''
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -20,14 +19,26 @@ export default function Contacto() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    // Simular envío (aquí puedes conectar con tu backend)
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Formatear mensaje para WhatsApp
+    const mensaje = `¡Hola! Me gustaría empezar con SUSTRAIN 🏃‍♂️
 
-    setIsLoading(false);
+*Nombre:* ${formData.nombre}
+*Correo:* ${formData.correo}
+*Localidad:* ${formData.localidad}
+
+*¿Qué espero de vosotros?*
+${formData.expectativas}`;
+
+    // Número de WhatsApp (sin el +)
+    const telefono = '34674561505';
+
+    // Abrir WhatsApp con el mensaje
+    const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    window.open(url, '_blank');
+
     setIsSubmitted(true);
   };
 
@@ -43,10 +54,10 @@ export default function Contacto() {
             <CheckCircle className="w-10 h-10 text-white" />
           </div>
           <h2 className="font-display font-black text-3xl text-rax-darkText mb-4">
-            ¡Mensaje Enviado!
+            ¡Perfecto!
           </h2>
           <p className="text-gray-600 mb-8">
-            Nos pondremos en contacto contigo lo antes posible. ¡Gracias por confiar en SUSTRAIN!
+            Se ha abierto WhatsApp con tu mensaje. Envíalo y te responderemos lo antes posible. ¡Gracias por confiar en SUSTRAIN!
           </p>
           <Link
             to="/"
@@ -175,17 +186,10 @@ export default function Contacto() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full mt-8 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full mt-8 bg-gradient-to-r from-purple-500 to-teal-400 text-white font-bold py-4 px-6 rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover:scale-[1.02] flex items-center justify-center gap-2"
             >
-              {isLoading ? (
-                <span>Enviando...</span>
-              ) : (
-                <>
-                  <span>Enviar mensaje</span>
-                  <Send className="w-4 h-4" />
-                </>
-              )}
+              <span>Enviar por WhatsApp</span>
+              <Send className="w-4 h-4" />
             </button>
 
             <p className="text-center text-xs text-gray-500 mt-4">

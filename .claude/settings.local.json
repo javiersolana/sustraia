@@ -38,7 +38,8 @@
       "Bash(npx create-expo-app@latest:*)",
       "Bash(eas:*)",
       "Bash(copy:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git remote:*)"
     ]
   }
 }
