@@ -48,15 +48,12 @@ const Login: React.FC = () => {
         className="w-full max-w-md"
       >
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="relative w-14 h-14 overflow-hidden rounded-full bg-gray-200 p-1">
-            <img
-              src="/images/logo2.png"
-              alt="RAX Logo"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <span className="font-display font-black text-4xl tracking-tighter text-rax-darkText">RAX</span>
+        <div className="flex items-center justify-center mb-8">
+          <img
+            src="/images/logo.png"
+            alt="SUSTRAIN Logo"
+            className="h-16 w-auto"
+          />
         </div>
 
         {/* Title */}
@@ -149,7 +146,7 @@ const Login: React.FC = () => {
         </div>
 
         <p className="text-center text-sm text-gray-400 mt-8">
-          © 2025 RAX. Todos los derechos reservados.
+          © 2025 SUSTRAIN. Todos los derechos reservados.
         </p>
       </motion.div>
     </div>

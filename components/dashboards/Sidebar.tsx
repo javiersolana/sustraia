@@ -52,11 +52,11 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
     <aside className="fixed left-0 top-0 h-screen w-72 bg-sustraia-paper border-r border-sustraia-light-gray flex flex-col justify-between p-6 z-40 hidden md:flex">
       <div>
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-12 px-2">
+        <div className="flex items-center justify-center mb-12">
           <img
             src="/images/logo.png"
             alt="SUSTRAIN Logo"
-            className="h-8 w-auto"
+            className="h-12 w-auto"
           />
         </div>
 
