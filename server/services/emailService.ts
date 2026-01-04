@@ -645,8 +645,8 @@ class EmailService {
     localidad: string;
     expectativas: string;
   }) {
-    // Email que recibes tú como admin
-    const adminEmail = process.env.ADMIN_CONTACT_EMAIL || 'lauretajon@gmail.com';
+    // Emails que reciben el formulario de contacto
+    const adminEmails = process.env.ADMIN_CONTACT_EMAIL || 'lauretajon@gmail.com,javierrsolanaa@gmail.com';
 
     const html = `
 <!DOCTYPE html>
@@ -818,7 +818,7 @@ class EmailService {
     `;
 
     return this.sendEmail({
-      to: adminEmail,
+      to: adminEmails,
       subject: `🎯 Nuevo lead: ${data.nombre} - ${data.localidad}`,
       html,
     });
