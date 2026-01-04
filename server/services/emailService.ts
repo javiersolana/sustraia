@@ -3,7 +3,7 @@ import type { Transporter } from 'nodemailer';
 import { Resend } from 'resend';
 
 interface EmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }
@@ -59,16 +59,21 @@ class EmailService {
     // Primero intenta con Resend (más fiable)
     if (this.resend) {
       try {
-        await this.resend.emails.send({
+        const result = await this.resend.emails.send({
           from: process.env.EMAIL_FROM || 'SUSTRAIN <onboarding@resend.dev>',
           to,
           subject,
           html,
         });
-        console.log(`📧 [Resend] Email sent to ${to}: ${subject}`);
+        console.log(`📧 [Resend] Email sent successfully to ${Array.isArray(to) ? to.join(', ') : to}`);
+        console.log(`📧 [Resend] Subject: ${subject}`);
+        console.log(`📧 [Resend] Result:`, result);
         return true;
       } catch (error) {
-        console.error('❌ Resend failed:', error);
+        console.error('❌ Resend failed with error:');
+        console.error('Error details:', JSON.stringify(error, null, 2));
+        console.error('Recipients:', Array.isArray(to) ? to.join(', ') : to);
+        console.error('From:', process.env.EMAIL_FROM || 'SUSTRAIN <onboarding@resend.dev>');
         // Fallback a nodemailer si falla
       }
     }
@@ -645,8 +650,9 @@ class EmailService {
     localidad: string;
     expectativas: string;
   }) {
-    // Emails que reciben el formulario de contacto
-    const adminEmails = process.env.ADMIN_CONTACT_EMAIL || 'lauretajon@gmail.com,javierrsolanaa@gmail.com';
+    // Emails que reciben el formulario de contacto (convertir a array)
+    const adminEmailsString = process.env.ADMIN_CONTACT_EMAIL || 'lauretajon@gmail.com,javierrsolanaa@gmail.com';
+    const adminEmails = adminEmailsString.split(',').map(email => email.trim());
 
     const html = `
 <!DOCTYPE html>
