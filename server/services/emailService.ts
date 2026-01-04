@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { Resend } from 'resend';
 
 interface EmailOptions {
   to: string;
@@ -9,9 +10,19 @@ interface EmailOptions {
 
 class EmailService {
   private transporter: Transporter | null = null;
+  private resend: Resend | null = null;
 
   constructor() {
     this.initializeTransporter();
+    this.initializeResend();
+  }
+
+  private initializeResend() {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (apiKey) {
+      this.resend = new Resend(apiKey);
+      console.log('✅ Resend email service initialized');
+    }
   }
 
   private initializeTransporter() {
@@ -20,11 +31,10 @@ class EmailService {
       EMAIL_PORT,
       EMAIL_USER,
       EMAIL_PASSWORD,
-      EMAIL_FROM,
     } = process.env;
 
     if (!EMAIL_HOST || !EMAIL_USER || !EMAIL_PASSWORD) {
-      console.warn('⚠️  Email service not configured. Set EMAIL_* env variables.');
+      console.warn('⚠️  Nodemailer not configured. Using Resend if available.');
       return;
     }
 
@@ -39,32 +49,49 @@ class EmailService {
         },
       });
 
-      console.log('✅ Email service initialized');
+      console.log('✅ Nodemailer email service initialized');
     } catch (error) {
-      console.error('❌ Failed to initialize email service:', error);
+      console.error('❌ Failed to initialize nodemailer:', error);
     }
   }
 
   async sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
-    if (!this.transporter) {
-      console.warn('Email service not available, skipping email to:', to);
-      return false;
+    // Primero intenta con Resend (más fiable)
+    if (this.resend) {
+      try {
+        await this.resend.emails.send({
+          from: process.env.EMAIL_FROM || 'SUSTRAIN <onboarding@resend.dev>',
+          to,
+          subject,
+          html,
+        });
+        console.log(`📧 [Resend] Email sent to ${to}: ${subject}`);
+        return true;
+      } catch (error) {
+        console.error('❌ Resend failed:', error);
+        // Fallback a nodemailer si falla
+      }
     }
 
-    try {
-      await this.transporter.sendMail({
-        from: process.env.EMAIL_FROM || 'SUSTRAIA <noreply@sustraia.com>',
-        to,
-        subject,
-        html,
-      });
-
-      console.log(`📧 Email sent to ${to}: ${subject}`);
-      return true;
-    } catch (error) {
-      console.error('Failed to send email:', error);
-      return false;
+    // Fallback a nodemailer
+    if (this.transporter) {
+      try {
+        await this.transporter.sendMail({
+          from: process.env.EMAIL_FROM || 'SUSTRAIN <noreply@sustrain.com>',
+          to,
+          subject,
+          html,
+        });
+        console.log(`📧 [Nodemailer] Email sent to ${to}: ${subject}`);
+        return true;
+      } catch (error) {
+        console.error('❌ Nodemailer failed:', error);
+        return false;
+      }
     }
+
+    console.warn('⚠️ No email service available, skipping email to:', to);
+    return false;
   }
 
   /**
