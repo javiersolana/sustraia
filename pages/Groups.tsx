@@ -16,7 +16,7 @@ import {
     UserPlus,
     Crown,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api/client';
 import { useSocket } from '../lib/hooks/useSocket';
 
@@ -47,6 +47,7 @@ interface GroupMessage {
 }
 
 const GroupsPage: React.FC = () => {
+    const navigate = useNavigate();
     const [groups, setGroups] = useState<Group[]>([]);
     const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -162,12 +163,12 @@ const GroupsPage: React.FC = () => {
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-4">
-                        <Link
-                            to="/"
+                        <button
+                            onClick={() => navigate(-1)}
                             className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:scale-105 transition"
                         >
                             <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                        </Link>
+                        </button>
                         <div>
                             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                                 Cuadrilla

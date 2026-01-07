@@ -31,14 +31,14 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
       { icon: TrendingUp, label: 'Progreso', href: '/dashboard/atleta/progreso' },
       { icon: Trophy, label: 'Logros', href: '/achievements' },
       { icon: Users2, label: 'Cuadrilla', href: '/cuadrilla' },
-      { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/atleta' },
+      { icon: MessageSquare, label: 'Mensajes', href: '/messages' },
     ]
     : [
       { icon: LayoutDashboard, label: 'Vista general', href: '/dashboard/coach' },
       { icon: Users, label: 'Mis atletas', href: '/dashboard/coach/atletas' },
       { icon: Calendar, label: 'Calendario', href: '/dashboard/coach/calendario' },
       { icon: Users2, label: 'Cuadrilla', href: '/cuadrilla' },
-      { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/coach' },
+      { icon: MessageSquare, label: 'Mensajes', href: '/messages' },
       { icon: BarChart3, label: 'Estadísticas', href: '/dashboard/coach' },
     ];
 

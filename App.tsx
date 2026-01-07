@@ -19,6 +19,7 @@ import Admin from './pages/Admin';
 import Settings from './pages/Settings';
 import Achievements from './pages/Achievements';
 import Groups from './pages/Groups';
+import Messages from './pages/Messages';
 import StravaCallback from './pages/auth/StravaCallback';
 import RequestPasswordReset from './pages/auth/RequestPasswordReset';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -65,6 +66,9 @@ export default function App() {
         {/* Quick Wins: Achievements and Groups */}
         <Route path="/achievements" element={<Achievements />} />
         <Route path="/cuadrilla" element={<Groups />} />
+
+        {/* Messages */}
+        <Route path="/messages" element={<Messages />} />
       </Routes>
     </Router>
   );
