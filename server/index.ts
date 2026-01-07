@@ -37,6 +37,10 @@ try {
 
 const app = express();
 
+// Trust the first proxy (Render/Heroku/Vercel load balancer)
+// Required for rate limiting and secure cookies to work correctly behind a proxy
+app.set('trust proxy', 1);
+
 // Middleware
 
 // Security headers with Helmet
