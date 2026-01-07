@@ -84,10 +84,14 @@ export async function login(req: Request, res: Response) {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.error('[LOGIN] Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { email, password } = req.body;
+    console.log('[LOGIN] Attempt for email:', email);
+    console.log('[LOGIN] Password length:', password?.length);
+    console.log('[LOGIN] Request body keys:', Object.keys(req.body));
 
     // Find user
     const user = await prisma.user.findUnique({
@@ -95,13 +99,19 @@ export async function login(req: Request, res: Response) {
     });
 
     if (!user) {
+      console.error('[LOGIN] User not found:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    console.log('[LOGIN] User found:', { id: user.id, email: user.email, role: user.role });
+    console.log('[LOGIN] Stored password hash length:', user.password?.length);
+
     // Verify password
     const isValid = await comparePassword(password, user.password);
+    console.log('[LOGIN] Password validation result:', isValid);
 
     if (!isValid) {
+      console.error('[LOGIN] Password mismatch for:', email);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
