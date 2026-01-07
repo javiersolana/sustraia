@@ -173,14 +173,18 @@ class ApiClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    skipAuth = false
   ): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
     };
 
-    if (this.token) {
+    // Only add Authorization header if:
+    // 1. We have a token
+    // 2. skipAuth is not explicitly set to true (for public endpoints like login/register)
+    if (this.token && !skipAuth) {
       headers.Authorization = `Bearer ${this.token}`;
     }
 
@@ -205,16 +209,24 @@ class ApiClient {
   // Auth endpoints
   auth = {
     register: (email: string, password: string, name: string, role: 'ATLETA' | 'COACH') =>
-      this.request<AuthResponse>('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify({ email, password, name, role }),
-      }),
+      this.request<AuthResponse>(
+        '/auth/register',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, password, name, role }),
+        },
+        true // skipAuth - don't send token for registration
+      ),
 
     login: (email: string, password: string) =>
-      this.request<AuthResponse>('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      }),
+      this.request<AuthResponse>(
+        '/auth/login',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email, password }),
+        },
+        true // skipAuth - don't send token for login
+      ),
 
     getProfile: () => this.request<{ user: User }>('/auth/profile'),
   };
