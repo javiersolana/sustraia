@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import ComoFunciona from './pages/ComoFunciona';
 import Contacto from './pages/Contacto';
 import Login from './pages/Login';
-import Register from './src/pages/Register';
+import Register from './pages/Register';
 import AthleteDashboard from './pages/dashboards/AthleteDashboard';
 import CoachDashboard from './pages/dashboards/CoachDashboard';
 import AthleteDetailView from './pages/dashboards/AthleteDetailView';
@@ -17,9 +17,11 @@ import CoachAthletesView from './pages/dashboards/CoachAthletesView';
 import CoachCalendarView from './pages/dashboards/CoachCalendarView';
 import Admin from './pages/Admin';
 import Settings from './pages/Settings';
+import Achievements from './pages/Achievements';
+import Groups from './pages/Groups';
 import StravaCallback from './pages/auth/StravaCallback';
-import RequestPasswordReset from './src/pages/auth/RequestPasswordReset';
-import ResetPassword from './src/pages/auth/ResetPassword';
+import RequestPasswordReset from './pages/auth/RequestPasswordReset';
+import ResetPassword from './pages/auth/ResetPassword';
 
 export default function App() {
   return (
@@ -59,6 +61,10 @@ export default function App() {
 
         {/* Settings */}
         <Route path="/settings" element={<Settings />} />
+
+        {/* Quick Wins: Achievements and Groups */}
+        <Route path="/achievements" element={<Achievements />} />
+        <Route path="/cuadrilla" element={<Groups />} />
       </Routes>
     </Router>
   );

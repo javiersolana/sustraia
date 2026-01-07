@@ -10,21 +10,22 @@ import { classifyWorkout, WorkoutType, ClassificationContext } from '../services
 import { calculateHRZones } from '../services/hrZonesService';
 import { getAthleteHistoricalStats } from '../services/athleteHistoryService';
 
-type WorkoutLabelType = 'CALENTAMIENTO' | 'DESCALENTAMIENTO' | 'FUERZA' | 'SERIES' | 'TEMPO' | 'RODAJE' | 'CUESTAS' | 'RECUPERACION' | 'PROGRESIVO' | 'FARTLEK' | 'COMPETICION' | 'OTRO';
+// Valid Prisma WorkoutLabel values
+type PrismaWorkoutLabel = 'CALENTAMIENTO' | 'DESCALENTAMIENTO' | 'FUERZA' | 'SERIES' | 'TEMPO' | 'RODAJE' | 'CUESTAS' | 'OTRO';
 
 /**
- * Map WorkoutType from classifier to WorkoutLabel enum
+ * Map WorkoutType from classifier to valid Prisma WorkoutLabel enum
  */
-function mapWorkoutTypeToLabel(workoutType: WorkoutType): WorkoutLabelType {
-  const mapping: Record<WorkoutType, WorkoutLabelType> = {
+function mapWorkoutTypeToLabel(workoutType: WorkoutType): PrismaWorkoutLabel {
+  const mapping: Record<WorkoutType, PrismaWorkoutLabel> = {
     SERIES: 'SERIES',
     TEMPO: 'TEMPO',
     RODAJE: 'RODAJE',
     CUESTAS: 'CUESTAS',
-    RECUPERACION: 'RECUPERACION',
-    PROGRESIVO: 'PROGRESIVO',
-    FARTLEK: 'FARTLEK',
-    COMPETICION: 'COMPETICION',
+    RECUPERACION: 'RODAJE',    // Map to RODAJE (recovery is easy running)
+    PROGRESIVO: 'TEMPO',       // Map to TEMPO (similar intensity pattern)
+    FARTLEK: 'SERIES',         // Map to SERIES (interval-based)
+    COMPETICION: 'SERIES',     // Map to SERIES (high intensity)
     OTRO: 'OTRO'
   };
 

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { prisma } from '../config/prisma';
+import { emitNewMessage, emitMessageRead } from '../services/socketService';
 
 // Validation rules
 export const sendMessageValidation = [
@@ -81,6 +82,15 @@ export async function sendMessage(req: Request, res: Response) {
           },
         },
       },
+    });
+
+    // Emit real-time socket event to recipient
+    emitNewMessage(toId, {
+      id: message.id,
+      fromId: req.user.userId,
+      fromName: message.from.name,
+      content,
+      createdAt: message.createdAt,
     });
 
     res.status(201).json({ message });
@@ -250,6 +260,9 @@ export async function markAsRead(req: Request, res: Response) {
       where: { id },
       data: { read: true },
     });
+
+    // Notify sender that message was read
+    emitMessageRead(message.fromId, id);
 
     res.json({ message: updated });
   } catch (error) {

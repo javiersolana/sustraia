@@ -9,7 +9,9 @@ import {
   Users,
   BarChart3,
   Settings,
-  Activity
+  Activity,
+  Trophy,
+  Users2
 } from 'lucide-react';
 import { Role } from '../../lib/types/dashboard';
 import { motion } from 'framer-motion';
@@ -27,13 +29,15 @@ const Sidebar: React.FC<SidebarProps> = ({ role }) => {
       { icon: Calendar, label: 'Entrenamientos', href: '/dashboard/atleta/calendario' },
       { icon: Activity, label: 'Actividades', href: '/dashboard/atleta/actividades' },
       { icon: TrendingUp, label: 'Progreso', href: '/dashboard/atleta/progreso' },
+      { icon: Trophy, label: 'Logros', href: '/achievements' },
+      { icon: Users2, label: 'Cuadrilla', href: '/cuadrilla' },
       { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/atleta' },
-      { icon: User, label: 'Perfil', href: '/dashboard/atleta' },
     ]
     : [
       { icon: LayoutDashboard, label: 'Vista general', href: '/dashboard/coach' },
       { icon: Users, label: 'Mis atletas', href: '/dashboard/coach/atletas' },
       { icon: Calendar, label: 'Calendario', href: '/dashboard/coach/calendario' },
+      { icon: Users2, label: 'Cuadrilla', href: '/cuadrilla' },
       { icon: MessageSquare, label: 'Mensajes', href: '/dashboard/coach' },
       { icon: BarChart3, label: 'Estadísticas', href: '/dashboard/coach' },
     ];

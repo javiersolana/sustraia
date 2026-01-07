@@ -1,7 +1,16 @@
 import express from 'express';
+import { createServer } from 'http';
 import cors from 'cors';
+import helmet from 'helmet';
 import { config, validateEnv } from './config/env';
+import { initializeSocket } from './services/socketService';
 import { errorHandler, notFound } from './middleware/errorHandler';
+import {
+  generalLimiter,
+  authLimiter,
+  passwordResetLimiter,
+  stravaLimiter,
+} from './middleware/rateLimit';
 
 // Routes
 import authRoutes from './routes/authRoutes';
@@ -15,6 +24,8 @@ import setupRoutes from './routes/setupRoutes';
 import userRoutes from './routes/userRoutes';
 import notesRoutes from './routes/notesRoutes';
 import contactRoutes from './routes/contactRoutes';
+import achievementRoutes from './routes/achievementRoutes';
+import groupRoutes from './routes/groupRoutes';
 
 // Validate environment variables
 try {
@@ -27,6 +38,22 @@ try {
 const app = express();
 
 // Middleware
+
+// Security headers with Helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      scriptSrc: ["'self'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Allow embedding for frontend
+}));
+
+// CORS
 app.use(
   cors({
     origin: [
@@ -40,8 +67,13 @@ app.use(
     credentials: true,
   })
 );
+
+// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// General rate limiting for all API routes
+app.use('/api', generalLimiter);
 
 // Request logging in development
 if (config.nodeEnv === 'development') {
@@ -59,22 +91,30 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/setup', setupRoutes); // Temporary setup routes
 app.use('/api/user', userRoutes);
-app.use('/api/auth', authRoutes);
+// Auth routes with stricter rate limiting
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/workouts', workoutRoutes);
 app.use('/api/messages', messageRoutes);
-app.use('/api/strava', stravaRoutes);
+// Strava routes with specific rate limiting
+app.use('/api/strava', stravaLimiter, stravaRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/training-plans', trainingPlanRoutes);
 app.use('/api', notesRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/achievements', achievementRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Error handling
 app.use(notFound);
 app.use(errorHandler);
 
+// Create HTTP server and initialize Socket.io
+const httpServer = createServer(app);
+initializeSocket(httpServer);
+
 // Start server
-const server = app.listen(config.port, () => {
+const server = httpServer.listen(config.port, () => {
   console.log(`
 ╔═══════════════════════════════════════╗
 ║   SUSTRAIA Backend API Server         ║

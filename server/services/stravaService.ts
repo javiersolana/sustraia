@@ -401,7 +401,7 @@ export async function syncActivityToWorkout(
       userId,
       workoutId: workoutId || null,
       title: activity.name,
-      label,
+      label: label as 'CALENTAMIENTO' | 'DESCALENTAMIENTO' | 'FUERZA' | 'SERIES' | 'TEMPO' | 'RODAJE' | 'CUESTAS' | 'OTRO',
       stravaId,
       stravaType: activity.type,
       completedAt: new Date(activity.start_date),

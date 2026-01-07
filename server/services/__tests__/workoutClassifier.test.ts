@@ -11,6 +11,7 @@
  * - Edge cases
  */
 
+import { describe, test, expect } from 'vitest';
 import { classifyWorkout, StravaDetailedActivity, StravaSplit, WorkoutType } from '../workoutClassifier';
 
 // Helper to create mock splits
@@ -69,11 +70,11 @@ describe('Workout Classifier - Series Detection', () => {
 
   test('Case 2: Pyramid 400-800-1200-800-400', () => {
     const laps = [
-      { distance: 400, moving_time: 92, elapsed_time: 182, average_speed: 400/92, total_elevation_gain: 0 },
-      { distance: 800, moving_time: 195, elapsed_time: 285, average_speed: 800/195, total_elevation_gain: 0 },
-      { distance: 1200, moving_time: 305, elapsed_time: 395, average_speed: 1200/305, total_elevation_gain: 0 },
-      { distance: 800, moving_time: 198, elapsed_time: 288, average_speed: 800/198, total_elevation_gain: 0 },
-      { distance: 400, moving_time: 94, elapsed_time: 184, average_speed: 400/94, total_elevation_gain: 0 }
+      { distance: 400, moving_time: 92, elapsed_time: 182, average_speed: 400 / 92, total_elevation_gain: 0 },
+      { distance: 800, moving_time: 195, elapsed_time: 285, average_speed: 800 / 195, total_elevation_gain: 0 },
+      { distance: 1200, moving_time: 305, elapsed_time: 395, average_speed: 1200 / 305, total_elevation_gain: 0 },
+      { distance: 800, moving_time: 198, elapsed_time: 288, average_speed: 800 / 198, total_elevation_gain: 0 },
+      { distance: 400, moving_time: 94, elapsed_time: 184, average_speed: 400 / 94, total_elevation_gain: 0 }
     ];
 
     const activity = createActivity(3600, 884, undefined, laps);
@@ -98,10 +99,10 @@ describe('Workout Classifier - Series Detection', () => {
 
   test('Case 4: Mixed intervals (different distances)', () => {
     const laps = [
-      { distance: 600, moving_time: 135, elapsed_time: 225, average_speed: 600/135, total_elevation_gain: 0 },
-      { distance: 1000, moving_time: 240, elapsed_time: 330, average_speed: 1000/240, total_elevation_gain: 0 },
-      { distance: 400, moving_time: 88, elapsed_time: 178, average_speed: 400/88, total_elevation_gain: 0 },
-      { distance: 800, moving_time: 190, elapsed_time: 280, average_speed: 800/190, total_elevation_gain: 0 }
+      { distance: 600, moving_time: 135, elapsed_time: 225, average_speed: 600 / 135, total_elevation_gain: 0 },
+      { distance: 1000, moving_time: 240, elapsed_time: 330, average_speed: 1000 / 240, total_elevation_gain: 0 },
+      { distance: 400, moving_time: 88, elapsed_time: 178, average_speed: 400 / 88, total_elevation_gain: 0 },
+      { distance: 800, moving_time: 190, elapsed_time: 280, average_speed: 800 / 190, total_elevation_gain: 0 }
     ];
 
     const activity = createActivity(2800, 653, undefined, laps);

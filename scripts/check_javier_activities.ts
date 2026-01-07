@@ -31,7 +31,6 @@ async function main() {
         where: {
             userId: user.id,
             OR: [
-                { label: 'COMPETICION' },
                 { title: { contains: 'Carrera' } },
                 { title: { contains: 'San Silvestre' } },
                 { title: { contains: '10K' } }

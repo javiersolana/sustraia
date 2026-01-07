@@ -37,6 +37,12 @@ model User {
   coachTrainingPlans    TrainingPlan[]     @relation("CoachTrainingPlans")
   athleteTrainingPlans  TrainingPlan[]     @relation("AthleteTrainingPlans")
   passwordResetTokens   PasswordResetToken[]
+  // Achievements
+  achievements          UserAchievement[]
+  // Community groups
+  createdGroups         AccountabilityGroup[] @relation("GroupCreator")
+  groupMemberships      GroupMember[]
+  groupMessages         GroupMessage[]
 
   @@index([email])
   @@index([role])
@@ -259,4 +265,102 @@ model PasswordResetToken {
   @@index([userId])
   @@index([token])
   @@index([expiresAt])
+}
+
+// ============================================================================
+// ACHIEVEMENT SYSTEM (Quick Wins - Medals)
+// ============================================================================
+
+model Achievement {
+  id          String              @id @default(cuid())
+  code        String              @unique // e.g., "STREAK_60", "FIRST_10K"
+  name        String              // "60 Días de Constancia"
+  description String
+  icon        String              // emoji or icon name
+  category    AchievementCategory
+  threshold   Int?                // numeric threshold (e.g., 60 for streak)
+  createdAt   DateTime            @default(now())
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+}
+
+enum AchievementCategory {
+  STREAK     // Consistency
+  DISTANCE   // Distance milestones
+  WORKOUT    // Workout count
+  COMMUNITY  // Social achievements
+  SPECIAL    // One-time events
+}
+
+// ============================================================================
+// ACCOUNTABILITY GROUPS (Cuadrilla Community)
+// ============================================================================
+
+model AccountabilityGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  creatorId   String
+  inviteCode  String   @unique @default(cuid())
+  weeklyGoal  Int      @default(4) // workouts per week
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator     User          @relation("GroupCreator", fields: [creatorId], references: [id])
+  members     GroupMember[]
+  messages    GroupMessage[]
+
+  @@index([creatorId])
+  @@index([inviteCode])
+}
+
+model GroupMember {
+  id        String    @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(MEMBER)
+  joinedAt  DateTime  @default(now())
+
+  group AccountabilityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model GroupMessage {
+  id        String   @id @default(cuid())
+  groupId   String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  group AccountabilityGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum GroupRole {
+  CREATOR
+  ADMIN
+  MEMBER
 }

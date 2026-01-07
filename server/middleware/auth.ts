@@ -28,7 +28,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export function requireRole(...roles: Array<'ATLETA' | 'COACH'>) {
+export function requireRole(...roles: Array<'ATLETA' | 'COACH' | 'ADMIN'>) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ error: 'Authentication required' });

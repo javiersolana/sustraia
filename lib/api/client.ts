@@ -659,6 +659,147 @@ class ApiClient {
         method: 'DELETE',
       }),
   };
+
+  // ============================================================================
+  // ACHIEVEMENTS API
+  // ============================================================================
+  achievements = {
+    getAll: () =>
+      this.request<{
+        achievements: {
+          id: string;
+          code: string;
+          name: string;
+          description: string;
+          icon: string;
+          category: string;
+          threshold?: number;
+        }[];
+      }>('/achievements'),
+
+    getMine: () =>
+      this.request<{
+        achievements: {
+          id: string;
+          earnedAt: string;
+          achievement: {
+            id: string;
+            code: string;
+            name: string;
+            description: string;
+            icon: string;
+            category: string;
+          };
+        }[];
+        progress: {
+          currentStreak: number;
+          totalDistance: number;
+          totalWorkouts: number;
+        };
+      }>('/achievements/me'),
+
+    check: () =>
+      this.request<{
+        newAchievements: { code: string; name: string; icon: string }[];
+        message: string;
+      }>('/achievements/check', { method: 'POST' }),
+
+    seed: () =>
+      this.request<{ success: boolean; message: string }>('/achievements/seed', {
+        method: 'POST',
+      }),
+  };
+
+  // ============================================================================
+  // GROUPS (CUADRILLA) API
+  // ============================================================================
+  groups = {
+    getAll: () =>
+      this.request<{
+        groups: {
+          id: string;
+          name: string;
+          description?: string;
+          weeklyGoal: number;
+          inviteCode: string;
+          createdAt: string;
+          myRole: string;
+          members: { user: { id: string; name: string } }[];
+          _count: { messages: number };
+        }[];
+      }>('/groups'),
+
+    get: (id: string) =>
+      this.request<{
+        group: {
+          id: string;
+          name: string;
+          description?: string;
+          weeklyGoal: number;
+          inviteCode: string;
+          creator: { id: string; name: string };
+          members: {
+            user: { id: string; name: string; email: string };
+            role: string;
+          }[];
+        };
+        leaderboard: {
+          user: { id: string; name: string };
+          role: string;
+          weeklyWorkouts: number;
+          compliance: number;
+        }[];
+      }>(`/groups/${id}`),
+
+    create: (data: { name: string; description?: string; weeklyGoal?: number }) =>
+      this.request<{
+        group: {
+          id: string;
+          name: string;
+          inviteCode: string;
+        };
+      }>('/groups', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    join: (inviteCode: string) =>
+      this.request<{
+        success: boolean;
+        group: { id: string; name: string };
+      }>('/groups/join', {
+        method: 'POST',
+        body: JSON.stringify({ inviteCode }),
+      }),
+
+    leave: (id: string) =>
+      this.request<{ success: boolean }>(`/groups/${id}/leave`, {
+        method: 'DELETE',
+      }),
+
+    getMessages: (id: string, limit = 50) =>
+      this.request<{
+        messages: {
+          id: string;
+          content: string;
+          createdAt: string;
+          user: { id: string; name: string };
+        }[];
+      }>(`/groups/${id}/messages?limit=${limit}`),
+
+    sendMessage: (id: string, content: string) =>
+      this.request<{
+        message: {
+          id: string;
+          content: string;
+          createdAt: string;
+          user: { id: string; name: string };
+        };
+      }>(`/groups/${id}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ content }),
+      }),
+  };
 }
 
 // Export singleton instance

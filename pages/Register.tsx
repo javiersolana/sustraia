@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Users, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth, ApiError } from '../../lib/api/client';
+import { useAuth, ApiError } from '../lib/api/client';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -148,11 +148,10 @@ const Register: React.FC = () => {
                 disabled={isLoading}
                 whileHover={!isLoading ? { scale: 1.02 } : {}}
                 whileTap={!isLoading ? { scale: 0.98 } : {}}
-                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  role === 'ATLETA'
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${role === 'ATLETA'
                     ? 'border-rax-darkText bg-white'
                     : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <User size={24} className={role === 'ATLETA' ? 'text-rax-darkText' : 'text-gray-400'} />
                 <span className={`font-bold text-sm ${role === 'ATLETA' ? 'text-rax-darkText' : 'text-gray-500'}`}>
@@ -166,11 +165,10 @@ const Register: React.FC = () => {
                 disabled={isLoading}
                 whileHover={!isLoading ? { scale: 1.02 } : {}}
                 whileTap={!isLoading ? { scale: 0.98 } : {}}
-                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  role === 'COACH'
+                className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${role === 'COACH'
                     ? 'border-rax-darkText bg-white'
                     : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
+                  }`}
               >
                 <Users size={24} className={role === 'COACH' ? 'text-rax-darkText' : 'text-gray-400'} />
                 <span className={`font-bold text-sm ${role === 'COACH' ? 'text-rax-darkText' : 'text-gray-500'}`}>

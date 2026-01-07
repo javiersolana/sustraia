@@ -1,9 +1,19 @@
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
-import { classifyWorkout, StravaDetailedActivity, StravaLap, StravaSplit } from '../server/services/workoutClassifier';
+import { classifyWorkout, StravaDetailedActivity, StravaLap, StravaSplit, WorkoutType } from '../server/services/workoutClassifier';
 
 const prisma = new PrismaClient();
 const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
+
+// Map WorkoutType to valid Prisma WorkoutLabel
+type PrismaLabel = 'SERIES' | 'TEMPO' | 'RODAJE' | 'CUESTAS' | 'OTRO';
+function mapWorkoutType(wt: WorkoutType): PrismaLabel {
+    const map: Record<WorkoutType, PrismaLabel> = {
+        SERIES: 'SERIES', TEMPO: 'TEMPO', RODAJE: 'RODAJE', CUESTAS: 'CUESTAS',
+        RECUPERACION: 'RODAJE', PROGRESIVO: 'TEMPO', FARTLEK: 'SERIES', COMPETICION: 'SERIES', OTRO: 'OTRO'
+    };
+    return map[wt] || 'OTRO';
+}
 
 async function main() {
     const userId = 'cmjoiripb0000f1cu9fmid6l4'; // Javier Solana
@@ -111,7 +121,7 @@ async function main() {
         await prisma.completedWorkout.update({
             where: { id: workout.id },
             data: {
-                label: result.workout_type,
+                label: mapWorkoutType(result.workout_type),
                 workoutStructure: completeStructure as any,
                 humanReadable: result.human_readable,
                 classificationConfidence: result.confidence

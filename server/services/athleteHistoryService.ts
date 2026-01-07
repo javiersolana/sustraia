@@ -41,13 +41,15 @@ export async function getAthleteHistoricalStats(
         return null;
     }
 
-    // Separate easy workouts (RODAJE, RECUPERACION) from competitions
+    // Separate easy workouts (RODAJE) from faster workouts
+    // Note: RECUPERACION and COMPETICION are not in Prisma enum, using RODAJE as easy pace reference
     const easyWorkouts = workouts.filter(w =>
-        w.label === 'RODAJE' || w.label === 'RECUPERACION'
+        w.label === 'RODAJE'
     );
 
-    const competitionWorkouts = workouts.filter(w =>
-        w.label === 'COMPETICION'
+    // For competition pace, use the fastest workouts (SERIES or TEMPO as proxy for race efforts)
+    const fastWorkouts = workouts.filter(w =>
+        w.label === 'SERIES' || w.label === 'TEMPO'
     );
 
     // Calculate average easy pace (sec/km)
@@ -76,10 +78,10 @@ export async function getAthleteHistoricalStats(
         }
     }
 
-    // Calculate average competition pace
+    // Calculate average competition/fast pace
     let avgCompetitionPace = avgEasyPace * 0.85; // Default: 15% faster than easy
-    if (competitionWorkouts.length > 0) {
-        const compPaces = competitionWorkouts.map(w =>
+    if (fastWorkouts.length > 0) {
+        const compPaces = fastWorkouts.map(w =>
             (w.actualDuration! / (w.actualDistance! / 1000))
         );
         avgCompetitionPace = compPaces.reduce((a, b) => a + b, 0) / compPaces.length;
