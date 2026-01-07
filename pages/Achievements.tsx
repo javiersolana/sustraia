@@ -6,7 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Flame, Target, Users, Star, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api/client';
 
 interface Achievement {
@@ -48,6 +48,7 @@ const categoryColors: Record<string, string> = {
 };
 
 const AchievementsPage: React.FC = () => {
+    const navigate = useNavigate();
     const [allAchievements, setAllAchievements] = useState<Achievement[]>([]);
     const [myAchievements, setMyAchievements] = useState<UserAchievement[]>([]);
     const [progress, setProgress] = useState<Progress | null>(null);
@@ -94,12 +95,12 @@ const AchievementsPage: React.FC = () => {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-8">
-                    <Link
-                        to="/"
+                    <button
+                        onClick={() => navigate(-1)}
                         className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:scale-105 transition"
                     >
                         <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                    </Link>
+                    </button>
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                             Mis Logros
