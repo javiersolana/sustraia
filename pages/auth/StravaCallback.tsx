@@ -18,7 +18,10 @@ export default function StravaCallback() {
             hasProcessed.current = true;
 
             const code = searchParams.get('code');
+            const state = searchParams.get('state');
             const error = searchParams.get('error');
+
+            console.log('📋 Strava callback params:', { code: !!code, state: !!state, error });
 
             if (error) {
                 setStatus('error');
@@ -35,8 +38,9 @@ export default function StravaCallback() {
             }
 
             try {
-                // Step 1: Connect Strava
-                await api.strava.handleCallback(code);
+                // Step 1: Connect Strava (pass state if available)
+                console.log('🔗 Calling handleCallback with:', { code: code.substring(0, 10) + '...', hasState: !!state });
+                await api.strava.handleCallback(code, state);
 
                 // Step 2: Import activities
                 setStatus('importing');

@@ -44,26 +44,43 @@ export async function handleCallback(req: Request, res: Response) {
       return res.status(400).json({ error: 'Authorization code required' });
     }
 
-    if (!state || typeof state !== 'string') {
-      return res.status(400).json({ error: 'State parameter required' });
-    }
-
-    // Decode state to get userId
-    let userId: string;
-    try {
-      const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
-      userId = decodedState.userId;
-
-      if (!userId) {
-        throw new Error('Invalid state parameter');
-      }
-    } catch (error) {
-      console.error('Failed to decode state parameter:', error);
-      return res.status(400).json({ error: 'Invalid state parameter' });
-    }
-
-    // Exchange code for tokens
+    // Exchange code for tokens first
     const tokenData = await exchangeToken(code);
+    const stravaAthleteId = tokenData.athlete.id.toString();
+
+    // Try to get userId from state parameter (preferred method)
+    let userId: string | null = null;
+
+    if (state && typeof state === 'string') {
+      try {
+        const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
+        userId = decodedState.userId;
+        console.log('✅ Got userId from state parameter:', userId);
+      } catch (error) {
+        console.warn('⚠️ Failed to decode state parameter, will try athlete ID fallback');
+      }
+    }
+
+    // Fallback: Try to find existing user by Strava athlete ID
+    if (!userId) {
+      console.log('🔍 No state parameter, looking up user by Strava athlete ID:', stravaAthleteId);
+
+      const existingToken = await prisma.stravaToken.findFirst({
+        where: { athleteId: stravaAthleteId },
+      });
+
+      if (existingToken) {
+        userId = existingToken.userId;
+        console.log('✅ Found existing user by athlete ID:', userId);
+      } else {
+        // No state and no existing connection - cannot proceed
+        console.error('❌ Cannot identify user: no state parameter and no existing Strava connection');
+        return res.status(400).json({
+          error: 'Cannot identify user',
+          message: 'Please ensure you are logged in before connecting Strava',
+        });
+      }
+    }
 
     // Store tokens
     await storeTokens(userId, tokenData);

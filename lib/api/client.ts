@@ -315,10 +315,15 @@ class ApiClient {
   strava = {
     getAuthUrl: () => this.request<{ authUrl: string }>('/strava/auth-url'),
 
-    handleCallback: (code: string) =>
-      this.request<{ success: boolean; athlete: any }>(
-        `/strava/callback?code=${code}`
-      ),
+    handleCallback: (code: string, state?: string | null) => {
+      const params = new URLSearchParams({ code });
+      if (state) {
+        params.append('state', state);
+      }
+      return this.request<{ success: boolean; athlete: any }>(
+        `/strava/callback?${params.toString()}`
+      );
+    },
 
     getStatus: () =>
       this.request<{ connected: boolean; athleteId?: string }>(
