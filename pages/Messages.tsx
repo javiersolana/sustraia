@@ -154,7 +154,7 @@ const MessagesPage: React.FC = () => {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
                 <div className="text-center">
-                    <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+                    <Loader2 className="w-12 h-12 text-gray-900 animate-spin mx-auto mb-4" />
                     <p className="text-gray-600 dark:text-gray-400">Cargando mensajes...</p>
                 </div>
             </div>
@@ -233,7 +233,7 @@ const MessagesPage: React.FC = () => {
                                             onClick={() => setSelectedUserId(conv.user.id)}
                                             className={`w-full text-left p-3 rounded-xl transition ${
                                                 selectedUserId === conv.user.id
-                                                    ? 'bg-blue-600 text-white'
+                                                    ? 'bg-gray-900 text-white'
                                                     : 'hover:bg-gray-100 dark:hover:bg-gray-700'
                                             }`}
                                         >
@@ -242,14 +242,14 @@ const MessagesPage: React.FC = () => {
                                                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
                                                         selectedUserId === conv.user.id
                                                             ? 'bg-white/20'
-                                                            : 'bg-blue-100 dark:bg-blue-900'
+                                                            : 'bg-gray-100 dark:bg-gray-700'
                                                     }`}
                                                 >
                                                     <User
                                                         className={`w-5 h-5 ${
                                                             selectedUserId === conv.user.id
                                                                 ? 'text-white'
-                                                                : 'text-blue-600 dark:text-blue-400'
+                                                                : 'text-gray-900 dark:text-gray-300'
                                                         }`}
                                                     />
                                                 </div>
@@ -269,7 +269,7 @@ const MessagesPage: React.FC = () => {
                                                     </p>
                                                 </div>
                                                 {conv.unread > 0 && (
-                                                    <div className="bg-blue-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                                                    <div className="bg-gray-900 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                                                         {conv.unread}
                                                     </div>
                                                 )}
@@ -293,8 +293,8 @@ const MessagesPage: React.FC = () => {
                                 {/* Chat Header */}
                                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                                            <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                                            <User className="w-5 h-5 text-gray-900 dark:text-gray-300" />
                                         </div>
                                         <div>
                                             <p className="font-semibold text-gray-900 dark:text-white">
@@ -327,7 +327,7 @@ const MessagesPage: React.FC = () => {
                                                     <div
                                                         className={`max-w-xs px-4 py-3 rounded-2xl ${
                                                             isOwn
-                                                                ? 'bg-blue-600 text-white'
+                                                                ? 'bg-gray-900 text-white'
                                                                 : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
                                                         }`}
                                                     >
@@ -335,7 +335,7 @@ const MessagesPage: React.FC = () => {
                                                         <p
                                                             className={`text-xs mt-1 ${
                                                                 isOwn
-                                                                    ? 'text-blue-100'
+                                                                    ? 'text-gray-300'
                                                                     : 'text-gray-500 dark:text-gray-400'
                                                             }`}
                                                         >
@@ -366,12 +366,12 @@ const MessagesPage: React.FC = () => {
                                             onChange={e => setNewMessage(e.target.value)}
                                             placeholder="Escribe un mensaje..."
                                             disabled={sending}
-                                            className="flex-1 px-4 py-3 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                                            className="flex-1 px-4 py-3 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:opacity-50"
                                         />
                                         <button
                                             type="submit"
                                             disabled={!newMessage.trim() || sending}
-                                            className="px-6 py-3 rounded-full bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
+                                            className="px-6 py-3 rounded-full bg-gray-900 text-white font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2"
                                         >
                                             {sending ? (
                                                 <Loader2 className="w-5 h-5 animate-spin" />

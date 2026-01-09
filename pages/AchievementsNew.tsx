@@ -11,7 +11,7 @@ import {
     Award, Zap, Crown, Star, CheckCircle2, Users, MapPin,
     Activity, TrendingUp, Heart, Calendar, Footprints,
     Link, Medal, Sunrise, Moon, CalendarCheck, Rocket,
-    Mountain, Shield, MessageCircle, RotateCcw
+    Mountain, Shield, MessageCircle, RotateCcw, ArrowLeft
 } from 'lucide-react';
 import { api } from '../lib/api/client';
 
@@ -164,23 +164,28 @@ const AchievementsPage: React.FC = () => {
             {/* Main Content */}
             <main className="flex-1 p-4 md:p-8 lg:px-12 max-w-7xl mx-auto w-full">
                 {/* Header Section */}
-                <header className="flex justify-between items-start mb-8 md:mb-12">
-                    <div>
-                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
-                            Mis Logros
-                        </h1>
-                        <p className="text-gray-500">
-                            Has desbloqueado{' '}
-                            <span className="font-semibold text-gray-900">{unlockedCount}</span> de{' '}
-                            <span className="font-semibold text-gray-900">{totalCount}</span> logros disponibles
-                        </p>
-                    </div>
+                <header className="mb-8 md:mb-12">
+                    {/* Back button */}
                     <button
-                        className="p-3 bg-white rounded-full border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"
                         onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
                     >
-                        <Bell size={20} />
+                        <ArrowLeft size={20} />
+                        <span className="font-medium">Volver</span>
                     </button>
+
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+                                Mis Logros
+                            </h1>
+                            <p className="text-gray-500">
+                                Has desbloqueado{' '}
+                                <span className="font-semibold text-gray-900">{unlockedCount}</span> de{' '}
+                                <span className="font-semibold text-gray-900">{totalCount}</span> logros disponibles
+                            </p>
+                        </div>
+                    </div>
                 </header>
 
                 {/* Level & XP Bar - Dopamine Hit #1 */}

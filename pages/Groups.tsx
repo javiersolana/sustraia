@@ -152,7 +152,7 @@ const GroupsPage: React.FC = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
             </div>
         );
     }
@@ -188,7 +188,7 @@ const GroupsPage: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setShowCreate(true)}
-                            className="px-4 py-2 rounded-xl bg-purple-600 text-white font-medium shadow-lg hover:scale-105 transition flex items-center gap-2"
+                            className="px-4 py-2 rounded-xl bg-gray-900 text-white font-medium shadow-lg hover:scale-105 transition flex items-center gap-2"
                         >
                             <Plus className="w-4 h-4" />
                             Crear
@@ -214,7 +214,7 @@ const GroupsPage: React.FC = () => {
                                     key={group.id}
                                     onClick={() => setSelectedGroup(group.id)}
                                     className={`w-full text-left p-4 rounded-2xl transition ${selectedGroup === group.id
-                                            ? 'bg-purple-600 text-white shadow-lg'
+                                            ? 'bg-gray-900 text-white shadow-lg'
                                             : 'bg-white dark:bg-gray-800 hover:shadow-md'
                                         }`}
                                     whileHover={{ scale: 1.02 }}
@@ -224,13 +224,13 @@ const GroupsPage: React.FC = () => {
                                         <div
                                             className={`w-10 h-10 rounded-full flex items-center justify-center ${selectedGroup === group.id
                                                     ? 'bg-white/20'
-                                                    : 'bg-purple-100 dark:bg-purple-900'
+                                                    : 'bg-gray-100 dark:bg-gray-700'
                                                 }`}
                                         >
                                             <Users
                                                 className={`w-5 h-5 ${selectedGroup === group.id
                                                         ? 'text-white'
-                                                        : 'text-purple-600 dark:text-purple-400'
+                                                        : 'text-gray-900 dark:text-gray-300'
                                                     }`}
                                             />
                                         </div>
@@ -275,7 +275,7 @@ const GroupsPage: React.FC = () => {
                                 </h2>
                                 <button
                                     onClick={() => copyInviteCode(currentGroup.inviteCode)}
-                                    className="text-sm text-purple-600 dark:text-purple-400 flex items-center gap-1 hover:underline"
+                                    className="text-sm text-gray-900 dark:text-gray-300 flex items-center gap-1 hover:underline"
                                 >
                                     <Copy className="w-4 h-4" />
                                     {copiedCode ? '¡Copiado!' : 'Invitar'}
@@ -330,7 +330,7 @@ const GroupsPage: React.FC = () => {
                     {currentGroup && (
                         <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg flex flex-col h-[500px]">
                             <div className="flex items-center gap-2 mb-4">
-                                <MessageCircle className="w-5 h-5 text-purple-600" />
+                                <MessageCircle className="w-5 h-5 text-gray-900" />
                                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                                     Chat del Grupo
                                 </h2>
@@ -347,7 +347,7 @@ const GroupsPage: React.FC = () => {
                                             key={msg.id}
                                             className="p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50"
                                         >
-                                            <p className="font-medium text-sm text-purple-600 dark:text-purple-400">
+                                            <p className="font-medium text-sm text-gray-900 dark:text-gray-300">
                                                 {msg.user.name}
                                             </p>
                                             <p className="text-gray-700 dark:text-gray-300">
@@ -369,12 +369,12 @@ const GroupsPage: React.FC = () => {
                                     value={newMessage}
                                     onChange={e => setNewMessage(e.target.value)}
                                     placeholder="Escribe un mensaje..."
-                                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                                    className="flex-1 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-gray-900 outline-none"
                                 />
                                 <button
                                     type="submit"
                                     disabled={!newMessage.trim()}
-                                    className="p-2 rounded-xl bg-purple-600 text-white disabled:opacity-50 hover:bg-purple-700 transition"
+                                    className="p-2 rounded-xl bg-gray-900 text-white disabled:opacity-50 hover:bg-gray-800 transition"
                                 >
                                     <Send className="w-5 h-5" />
                                 </button>
@@ -408,7 +408,7 @@ const GroupsPage: React.FC = () => {
                                     value={newGroupName}
                                     onChange={e => setNewGroupName(e.target.value)}
                                     placeholder="Nombre del grupo"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-purple-500 outline-none"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-gray-900 outline-none"
                                 />
                                 <div className="flex gap-3">
                                     <button
@@ -420,7 +420,7 @@ const GroupsPage: React.FC = () => {
                                     <button
                                         onClick={handleCreateGroup}
                                         disabled={!newGroupName.trim()}
-                                        className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium disabled:opacity-50"
+                                        className="flex-1 py-3 rounded-xl bg-gray-900 text-white font-medium disabled:opacity-50"
                                     >
                                         Crear
                                     </button>
@@ -455,7 +455,7 @@ const GroupsPage: React.FC = () => {
                                     value={inviteCode}
                                     onChange={e => setInviteCode(e.target.value)}
                                     placeholder="Código de invitación"
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-purple-500 outline-none font-mono"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-gray-900 outline-none font-mono"
                                 />
                                 <div className="flex gap-3">
                                     <button
@@ -467,7 +467,7 @@ const GroupsPage: React.FC = () => {
                                     <button
                                         onClick={handleJoinGroup}
                                         disabled={!inviteCode.trim()}
-                                        className="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium disabled:opacity-50"
+                                        className="flex-1 py-3 rounded-xl bg-gray-900 text-white font-medium disabled:opacity-50"
                                     >
                                         Unirse
                                     </button>

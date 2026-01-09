@@ -109,8 +109,18 @@ export async function getUserActivities(req: Request, res: Response) {
     const activities = await getActivities(req.user.userId, { page, perPage });
 
     res.json({ activities });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get activities error:', error);
+
+    // Check if it's a token expiration error
+    if (error?.message?.includes('token expired') || error?.message?.includes('reconnect')) {
+      return res.status(401).json({
+        error: 'Strava token expired',
+        message: 'Tu conexión con Strava ha expirado. Por favor, reconecta tu cuenta.',
+        needsReconnect: true
+      });
+    }
+
     res.status(500).json({ error: 'Failed to fetch activities' });
   }
 }
@@ -150,8 +160,18 @@ export async function syncActivity(req: Request, res: Response) {
       },
       newAchievements: newAchievements.length > 0 ? newAchievements : undefined,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Sync activity error:', error);
+
+    // Check if it's a token expiration error
+    if (error?.message?.includes('token expired') || error?.message?.includes('reconnect')) {
+      return res.status(401).json({
+        error: 'Strava token expired',
+        message: 'Tu conexión con Strava ha expirado. Por favor, reconecta tu cuenta.',
+        needsReconnect: true
+      });
+    }
+
     res.status(500).json({ error: 'Failed to sync activity' });
   }
 }
@@ -199,6 +219,16 @@ export async function importActivities(req: Request, res: Response) {
     });
   } catch (error: any) {
     console.error('Import activities error:', error);
+
+    // Check if it's a token expiration error
+    if (error?.message?.includes('token expired') || error?.message?.includes('reconnect')) {
+      return res.status(401).json({
+        error: 'Strava token expired',
+        message: 'Tu conexión con Strava ha expirado. Por favor, reconecta tu cuenta.',
+        needsReconnect: true
+      });
+    }
+
     res.status(500).json({
       error: 'Failed to import activities',
       details: error?.message

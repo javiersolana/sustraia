@@ -113,19 +113,29 @@ export async function getValidToken(userId: string): Promise<string> {
 
   // If token expires in less than 5 minutes, refresh it
   if (expiresAt.getTime() - now.getTime() < 5 * 60 * 1000) {
-    const refreshed = await refreshAccessToken(stravaToken.refreshToken);
+    console.log(`🔄 Token expired or expiring soon for user ${userId}, refreshing...`);
 
-    // Update token in database
-    await prisma.stravaToken.update({
-      where: { userId },
-      data: {
-        accessToken: refreshed.access_token,
-        refreshToken: refreshed.refresh_token,
-        expiresAt: new Date(refreshed.expires_at * 1000),
-      },
-    });
+    try {
+      const refreshed = await refreshAccessToken(stravaToken.refreshToken);
 
-    return refreshed.access_token;
+      // Update token in database
+      await prisma.stravaToken.update({
+        where: { userId },
+        data: {
+          accessToken: refreshed.access_token,
+          refreshToken: refreshed.refresh_token,
+          expiresAt: new Date(refreshed.expires_at * 1000),
+        },
+      });
+
+      console.log(`✅ Token refreshed successfully for user ${userId}`);
+      return refreshed.access_token;
+    } catch (error: any) {
+      console.error(`❌ Failed to refresh token for user ${userId}:`, error?.response?.data || error?.message);
+
+      // If refresh fails, the user needs to reconnect Strava
+      throw new Error('Strava token expired. Please reconnect your Strava account.');
+    }
   }
 
   return stravaToken.accessToken;
