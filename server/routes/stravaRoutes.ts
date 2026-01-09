@@ -22,7 +22,7 @@ router.post('/webhook', handleWebhook);
 
 // Protected routes (require authentication)
 router.get('/auth-url', authenticate, getAuthUrl);
-router.get('/callback', authenticate, handleCallback);
+router.get('/callback', handleCallback); // NO authenticate - uses state parameter instead
 router.get('/status', authenticate, getConnectionStatus);
 router.get('/activities', authenticate, getUserActivities);
 router.get('/activities/:activityId/laps', authenticate, getActivityLapsController);

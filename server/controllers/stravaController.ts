@@ -21,7 +21,14 @@ import { checkAndAwardAchievements, awardAchievement } from '../services/achieve
  * Get Strava OAuth authorization URL
  */
 export async function getAuthUrl(req: Request, res: Response) {
-  const authUrl = `https://www.strava.com/oauth/authorize?client_id=${config.strava.clientId}&response_type=code&redirect_uri=${config.strava.redirectUri}&approval_prompt=force&scope=read,activity:read_all`;
+  if (!req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  // Include userId in state parameter for callback
+  const state = Buffer.from(JSON.stringify({ userId: req.user.userId })).toString('base64');
+
+  const authUrl = `https://www.strava.com/oauth/authorize?client_id=${config.strava.clientId}&response_type=code&redirect_uri=${config.strava.redirectUri}&approval_prompt=force&scope=read,activity:read_all&state=${state}`;
 
   res.json({ authUrl });
 }
@@ -31,24 +38,38 @@ export async function getAuthUrl(req: Request, res: Response) {
  */
 export async function handleCallback(req: Request, res: Response) {
   try {
-    const { code } = req.query;
+    const { code, state } = req.query;
 
     if (!code || typeof code !== 'string') {
       return res.status(400).json({ error: 'Authorization code required' });
     }
 
-    if (!req.user) {
-      return res.status(401).json({ error: 'User not authenticated' });
+    if (!state || typeof state !== 'string') {
+      return res.status(400).json({ error: 'State parameter required' });
+    }
+
+    // Decode state to get userId
+    let userId: string;
+    try {
+      const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
+      userId = decodedState.userId;
+
+      if (!userId) {
+        throw new Error('Invalid state parameter');
+      }
+    } catch (error) {
+      console.error('Failed to decode state parameter:', error);
+      return res.status(400).json({ error: 'Invalid state parameter' });
     }
 
     // Exchange code for tokens
     const tokenData = await exchangeToken(code);
 
     // Store tokens
-    await storeTokens(req.user.userId, tokenData);
+    await storeTokens(userId, tokenData);
 
     // Award Strava connected achievement
-    await awardAchievement(req.user.userId, 'STRAVA_CONNECTED');
+    await awardAchievement(userId, 'STRAVA_CONNECTED');
 
     res.json({
       success: true,
