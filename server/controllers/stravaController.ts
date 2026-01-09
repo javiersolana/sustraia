@@ -15,6 +15,7 @@ import { prisma } from '../config/prisma';
 import { classifyWorkout, WorkoutType, ClassificationContext } from '../services/workoutClassifier';
 import { calculateHRZones } from '../services/hrZonesService';
 import { getAthleteHistoricalStats } from '../services/athleteHistoryService';
+import { checkAndAwardAchievements, awardAchievement } from '../services/achievementService';
 
 /**
  * Get Strava OAuth authorization URL
@@ -45,6 +46,9 @@ export async function handleCallback(req: Request, res: Response) {
 
     // Store tokens
     await storeTokens(req.user.userId, tokenData);
+
+    // Award Strava connected achievement
+    await awardAchievement(req.user.userId, 'STRAVA_CONNECTED');
 
     res.json({
       success: true,
@@ -132,6 +136,9 @@ export async function syncActivity(req: Request, res: Response) {
     // Sync to workout
     await syncActivityToWorkout(req.user.userId, activity, workoutId);
 
+    // Check for new achievements
+    const newAchievements = await checkAndAwardAchievements(req.user.userId);
+
     res.json({
       success: true,
       activity: {
@@ -141,6 +148,7 @@ export async function syncActivity(req: Request, res: Response) {
         distance: activity.distance,
         duration: activity.moving_time,
       },
+      newAchievements: newAchievements.length > 0 ? newAchievements : undefined,
     });
   } catch (error) {
     console.error('Sync activity error:', error);
@@ -179,11 +187,15 @@ export async function importActivities(req: Request, res: Response) {
 
     const result = await importInitialActivities(req.user.userId, weeks);
 
+    // Check for new achievements after importing all activities
+    const newAchievements = await checkAndAwardAchievements(req.user.userId);
+
     res.json({
       success: true,
       imported: result.imported,
       skipped: result.skipped,
       activities: result.activities,
+      newAchievements: newAchievements.length > 0 ? newAchievements : undefined,
     });
   } catch (error: any) {
     console.error('Import activities error:', error);
@@ -237,6 +249,9 @@ export async function handleWebhook(req: Request, res: Response) {
         // Fetch and sync the activity
         const activity = await getActivity(stravaToken.userId, activityId);
         await syncActivityToWorkout(stravaToken.userId, activity);
+
+        // Check for new achievements
+        await checkAndAwardAchievements(stravaToken.userId);
       }
     }
 

@@ -17,7 +17,7 @@ import CoachAthletesView from './pages/dashboards/CoachAthletesView';
 import CoachCalendarView from './pages/dashboards/CoachCalendarView';
 import Admin from './pages/Admin';
 import Settings from './pages/Settings';
-import Achievements from './pages/Achievements';
+import Achievements from './pages/AchievementsNew';
 import Groups from './pages/Groups';
 import Messages from './pages/Messages';
 import StravaCallback from './pages/auth/StravaCallback';

@@ -53,7 +53,13 @@ function generateTitle(blocks: TrainingBlockWithId[]): string {
                 } else if (block.distanceMeters) {
                     runPart = `${(block.distanceMeters / 1000).toFixed(1)}km`;
                 }
-                if (block.paceMin) {
+                // Use average pace if both min and max are set, otherwise use min
+                if (block.paceMin && block.paceMax) {
+                    const avgPace = (block.paceMin + block.paceMax) / 2;
+                    const paceMin = Math.floor(avgPace / 60);
+                    const paceSec = Math.round(avgPace % 60);
+                    runPart += ` @${paceMin}:${paceSec.toString().padStart(2, '0')}`;
+                } else if (block.paceMin) {
                     const paceMin = Math.floor(block.paceMin / 60);
                     const paceSec = Math.round(block.paceMin % 60);
                     runPart += ` @${paceMin}:${paceSec.toString().padStart(2, '0')}`;
@@ -68,7 +74,13 @@ function generateTitle(blocks: TrainingBlockWithId[]): string {
                 } else if (block.durationSeconds) {
                     intPart = `${reps}x${Math.round(block.durationSeconds / 60)}'`;
                 }
-                if (block.paceMin) {
+                // Use average pace if both min and max are set
+                if (block.paceMin && block.paceMax) {
+                    const avgPace = (block.paceMin + block.paceMax) / 2;
+                    const paceMin = Math.floor(avgPace / 60);
+                    const paceSec = Math.round(avgPace % 60);
+                    intPart += ` @${paceMin}:${paceSec.toString().padStart(2, '0')}`;
+                } else if (block.paceMin) {
                     const paceMin = Math.floor(block.paceMin / 60);
                     const paceSec = Math.round(block.paceMin % 60);
                     intPart += ` @${paceMin}:${paceSec.toString().padStart(2, '0')}`;
