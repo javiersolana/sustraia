@@ -16,7 +16,6 @@ model User {
   role                  UserRole
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
-  coachId               String?
   weeklyGoalKm          Float?
   birthDate             DateTime?
   maxHeartRate          Int?
@@ -30,8 +29,6 @@ model User {
   receivedMessages      Message[]          @relation("ReceivedMessages")
   stats                 Stat[]
   stravaToken           StravaToken?
-  coach                 User?              @relation("CoachAthletes", fields: [coachId], references: [id])
-  athletes              User[]             @relation("CoachAthletes")
   assignedWorkouts      Workout[]          @relation("AssignedWorkouts")
   workouts              Workout[]
   coachTrainingPlans    TrainingPlan[]     @relation("CoachTrainingPlans")
@@ -43,9 +40,28 @@ model User {
   createdGroups         AccountabilityGroup[] @relation("GroupCreator")
   groupMemberships      GroupMember[]
   groupMessages         GroupMessage[]
+  // Many-to-many Coach-Athlete relationship
+  coachRelationships    CoachAthlete[]     @relation("AthleteCoaches")
+  athleteRelationships  CoachAthlete[]     @relation("CoachAthletes")
 
   @@index([email])
   @@index([role])
+}
+
+// New junction table for many-to-many coach-athlete relationships
+model CoachAthlete {
+  id        String   @id @default(cuid())
+  coachId   String
+  athleteId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coach   User @relation("CoachAthletes", fields: [coachId], references: [id], onDelete: Cascade)
+  athlete User @relation("AthleteCoaches", fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([coachId, athleteId])
+  @@index([coachId])
+  @@index([athleteId])
 }
 
 model Workout {

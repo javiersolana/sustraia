@@ -26,7 +26,7 @@ const MessagesPage: React.FC = () => {
     const navigate = useNavigate();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [currentUser, setCurrentUser] = useState<UserType | null>(null);
-    const [coach, setCoach] = useState<{ id: string; name: string; email: string } | null>(null);
+    const [coaches, setCoaches] = useState<{ id: string; name: string; email: string }[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -80,11 +80,14 @@ const MessagesPage: React.FC = () => {
             setCurrentUser(profileRes.user);
 
             if (profileRes.user.role === 'ATLETA') {
-                // For athletes: get their coach
+                // For athletes: get all their coaches
                 const coachRes = await api.user.getMyCoach();
-                setCoach(coachRes.coach);
-                if (coachRes.coach) {
-                    setSelectedUserId(coachRes.coach.id);
+                const coachesList = coachRes.coaches || (coachRes.coach ? [coachRes.coach] : []);
+                setCoaches(coachesList);
+
+                // Auto-select first coach if available
+                if (coachesList.length > 0) {
+                    setSelectedUserId(coachesList[0].id);
                 }
             } else if (profileRes.user.role === 'COACH') {
                 // For coaches: load conversations
@@ -147,7 +150,7 @@ const MessagesPage: React.FC = () => {
     };
 
     const selectedUserName = currentUser?.role === 'ATLETA'
-        ? coach?.name
+        ? coaches.find(c => c.id === selectedUserId)?.name
         : conversations.find(c => c.user.id === selectedUserId)?.user.name;
 
     if (loading) {
@@ -161,8 +164,8 @@ const MessagesPage: React.FC = () => {
         );
     }
 
-    // Athlete with no coach
-    if (currentUser?.role === 'ATLETA' && !coach) {
+    // Athlete with no coaches
+    if (currentUser?.role === 'ATLETA' && coaches.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
                 <div className="max-w-4xl mx-auto">
@@ -180,7 +183,7 @@ const MessagesPage: React.FC = () => {
                     <div className="text-center py-12">
                         <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-600 dark:text-gray-400">
-                            No tienes un coach asignado todavía.
+                            No tienes ningún coach asignado todavía.
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
                             Contacta con el administrador para que te asigne un coach.
@@ -208,25 +211,71 @@ const MessagesPage: React.FC = () => {
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400">
                             {currentUser?.role === 'ATLETA'
-                                ? `Conversación con ${coach?.name}`
+                                ? (coaches.length > 1 ? 'Mensajes con tus coaches' : `Conversación con ${coaches[0]?.name}`)
                                 : 'Conversaciones con atletas'}
                         </p>
                     </div>
                 </div>
 
                 <div className="grid md:grid-cols-12 gap-6">
-                    {/* Conversations List (only for coaches) */}
-                    {currentUser?.role === 'COACH' && (
+                    {/* Coaches List (for athletes with multiple coaches) or Conversations List (for coaches) */}
+                    {(currentUser?.role === 'ATLETA' && coaches.length > 1) ||  currentUser?.role === 'COACH' ? (
                         <div className="md:col-span-4 bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4">
                             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                Atletas
+                                {currentUser?.role === 'ATLETA' ? 'Coaches' : 'Atletas'}
                             </h2>
                             <div className="space-y-2">
-                                {conversations.length === 0 ? (
+                                {currentUser?.role === 'ATLETA' ? (
+                                    // List of coaches for athlete
+                                    coaches.map(coach => (
+                                        <button
+                                            key={coach.id}
+                                            onClick={() => setSelectedUserId(coach.id)}
+                                            className={`w-full text-left p-3 rounded-xl transition ${
+                                                selectedUserId === coach.id
+                                                    ? 'bg-gray-900 text-white'
+                                                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                                        selectedUserId === coach.id
+                                                            ? 'bg-white/20'
+                                                            : 'bg-gray-100 dark:bg-gray-700'
+                                                    }`}
+                                                >
+                                                    <User
+                                                        className={`w-5 h-5 ${
+                                                            selectedUserId === coach.id
+                                                                ? 'text-white'
+                                                                : 'text-gray-900 dark:text-gray-300'
+                                                        }`}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold truncate">
+                                                        {coach.name}
+                                                    </p>
+                                                    <p
+                                                        className={`text-sm truncate ${
+                                                            selectedUserId === coach.id
+                                                                ? 'text-white/70'
+                                                                : 'text-gray-500 dark:text-gray-400'
+                                                        }`}
+                                                    >
+                                                        Coach
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : conversations.length === 0 ? (
                                     <p className="text-center text-gray-500 dark:text-gray-400 py-8 text-sm">
                                         No hay conversaciones
                                     </p>
                                 ) : (
+                                    // List of athletes for coach
                                     conversations.map(conv => (
                                         <button
                                             key={conv.user.id}
@@ -284,7 +333,9 @@ const MessagesPage: React.FC = () => {
                     {/* Messages Panel */}
                     <div
                         className={`${
-                            currentUser?.role === 'COACH' ? 'md:col-span-8' : 'md:col-span-12'
+                            (currentUser?.role === 'COACH' || (currentUser?.role === 'ATLETA' && coaches.length > 1))
+                                ? 'md:col-span-8'
+                                : 'md:col-span-12'
                         } bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex flex-col`}
                         style={{ height: '600px' }}
                     >

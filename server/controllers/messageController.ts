@@ -34,27 +34,34 @@ export async function sendMessage(req: Request, res: Response) {
       return res.status(404).json({ error: 'Recipient not found' });
     }
 
-    // Verify relationship (coach-athlete)
+    // Verify relationship (coach-athlete) using new many-to-many structure
     if (req.user.role === 'COACH') {
       // Coach can message their athletes
-      const isMyAthlete = await prisma.user.findFirst({
+      const relationship = await prisma.coachAthlete.findUnique({
         where: {
-          id: toId,
-          coachId: req.user.userId,
+          coachId_athleteId: {
+            coachId: req.user.userId,
+            athleteId: toId,
+          },
         },
       });
 
-      if (!isMyAthlete) {
+      if (!relationship) {
         return res.status(403).json({ error: 'Can only message your athletes' });
       }
     } else {
-      // Athlete can message their coach
-      const user = await prisma.user.findUnique({
-        where: { id: req.user.userId },
+      // Athlete can message any of their coaches
+      const relationship = await prisma.coachAthlete.findUnique({
+        where: {
+          coachId_athleteId: {
+            coachId: toId,
+            athleteId: req.user.userId,
+          },
+        },
       });
 
-      if (user?.coachId !== toId) {
-        return res.status(403).json({ error: 'Can only message your coach' });
+      if (!relationship) {
+        return res.status(403).json({ error: 'Can only message your coaches' });
       }
     }
 

@@ -42,8 +42,8 @@ export async function updateWeeklyGoal(req: Request, res: Response) {
 }
 
 /**
- * Get my coach info (for athletes)
- * Endpoint seguro que permite a atletas ver info básica de su coach
+ * Get my coaches info (for athletes)
+ * Returns all coaches assigned to the athlete
  */
 export async function getMyCoach(req: Request, res: Response) {
     try {
@@ -53,12 +53,10 @@ export async function getMyCoach(req: Request, res: Response) {
 
         const userId = req.user.userId;
 
-        // Get user with coach relation
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                coachId: true,
+        // Get all coaches for this athlete using the new many-to-many structure
+        const coachRelationships = await prisma.coachAthlete.findMany({
+            where: { athleteId: userId },
+            include: {
                 coach: {
                     select: {
                         id: true,
@@ -67,17 +65,20 @@ export async function getMyCoach(req: Request, res: Response) {
                     },
                 },
             },
+            orderBy: { createdAt: 'asc' },
         });
 
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+        if (coachRelationships.length === 0) {
+            return res.json({ coach: null, coaches: [] });
         }
 
-        if (!user.coach) {
-            return res.json({ coach: null });
-        }
+        const coaches = coachRelationships.map(rel => rel.coach);
 
-        res.json({ coach: user.coach });
+        // For backwards compatibility, return the first coach as "coach" and all as "coaches"
+        res.json({
+            coach: coaches[0], // Primary coach (first one)
+            coaches, // All coaches
+        });
     } catch (error) {
         console.error('Get my coach error:', error);
         res.status(500).json({ error: 'Failed to get coach info' });
